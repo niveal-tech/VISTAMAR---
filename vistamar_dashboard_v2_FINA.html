@@ -1,0 +1,2656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vistamar Coqueiro — Monitoramento v2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.6;color:#111;background:#f5f5f2;padding:1.5rem}
+.vr{max-width:1200px;margin:0 auto;padding-bottom:3rem}
+
+/* HEADER */
+.hdr{background:#0F1923;border-radius:14px;padding:1.5rem 1.75rem;margin-bottom:1.25rem}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem}
+.hdr-eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9FE1CB;margin-bottom:.3rem}
+.hdr-title{font-size:22px;font-weight:600;color:#fff;margin:0 0 .2rem}
+.hdr-sub{font-size:13px;color:rgba(255,255,255,.45)}
+.hdr-stats{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin-top:1.25rem}
+.hs{padding:.85rem 1rem;background:rgba(255,255,255,.03);min-width:0}
+.hs-l{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.3rem}
+.hs-v{font-size:13px;font-weight:600;color:#fff;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-v.g{color:#9FE1CB}.hs-v.w{color:#FAC775}.hs-v.r{color:#F7C1C1}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:#ebebeb;padding:4px;border-radius:12px;margin-bottom:1.25rem;overflow-x:auto}
+.tab{flex:1;min-width:fit-content;padding:8px 14px;border:none;background:transparent;border-radius:8px;font-size:12px;font-weight:500;color:#666;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.tab:hover{color:#111}
+.tab.on{background:#fff;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.tab.danger.on{color:#A32D2D}
+.sec{display:none}.sec.on{display:block}
+
+/* CARD */
+.card{background:#fff;border:0.5px solid #e0e0e0;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-h{display:flex;align-items:center;gap:8px;margin-bottom:1rem;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#666}
+.card-h .bar{display:inline-block;width:3px;height:14px;border-radius:2px;flex-shrink:0}
+.bar-t{background:#1D9E75}.bar-a{background:#EF9F27}.bar-r{background:#E24B4A}.bar-b{background:#378ADD}
+
+/* METRIC CARDS — números não extravasam */
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.85rem;margin-bottom:1rem}
+.mc{border:0.5px solid #e0e0e0;border-radius:12px;padding:1.1rem 1.25rem;background:#fff;min-width:0;overflow:hidden}
+.mc.hero{background:#0F1923;border-color:transparent}
+.mc.ok{background:#EAF3DE;border-color:#C0DD97}
+.mc.warn{background:#FAEEDA;border-color:#FAC775}
+.mc.danger{background:#FCEBEB;border-color:#F7C1C1}
+.mc-l{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#888;margin-bottom:.45rem}
+.mc.hero .mc-l{color:rgba(255,255,255,.4)}.mc.ok .mc-l{color:#0F6E56}.mc.warn .mc-l{color:#633806}.mc.danger .mc-l{color:#791F1F}
+/* Font responsiva: nunca maior que 20px, encolhe com o container */
+.mc-v{font-size:clamp(15px,2vw,20px);font-weight:600;font-family:monospace;color:#111;line-height:1.2;word-break:break-word;overflow-wrap:break-word}
+.mc.hero .mc-v{color:#9FE1CB;font-size:clamp(14px,1.6vw,17px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc.ok .mc-v{color:#085041}.mc.warn .mc-v{color:#412402}.mc.danger .mc-v{color:#501313}
+.mc-s{font-size:11px;color:#888;margin-top:.3rem}
+.mc.hero .mc-s{color:rgba(255,255,255,.35)}.mc.ok .mc-s{color:#0F6E56}.mc.warn .mc-s{color:#854F0B}.mc.danger .mc-s{color:#A32D2D}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%}
+.p-ok{background:#EAF3DE;color:#27500A}.p-ok::before{background:#639922}
+.p-warn{background:#FAEEDA;color:#633806}.p-warn::before{background:#EF9F27}
+.p-danger{background:#FCEBEB;color:#501313}.p-danger::before{background:#E24B4A}
+.p-neutral{background:#f0f0f0;color:#666}.p-neutral::before{background:#aaa}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:7px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;border-bottom:0.5px solid #e0e0e0;white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:0.5px solid #e0e0e0}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .nr{font-family:monospace;text-align:right}
+.tbl .tot td{font-weight:600;background:#f8f8f8}
+.tbl tr.sold td{opacity:.45}.tbl tr.sold .uname{text-decoration:line-through}
+.ttype{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.t-apto{background:#E6F1FB;color:#042C53}.t-com{background:#EAF3DE;color:#173404}.t-casa{background:#FAEEDA;color:#412402}
+
+/* CHECKLIST */
+.cl{list-style:none;padding:0}
+.cl li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px}
+.cl li:last-child{border-bottom:none}
+.cl input[type=checkbox]{margin-top:2px;flex-shrink:0;accent-color:#1D9E75;width:15px;height:15px;cursor:pointer}
+.cl .lbl{flex:1;color:#111}.cl .lbl.done{text-decoration:line-through;color:#888}
+
+/* PROGRESS */
+.prog-w{margin:.7rem 0}
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:.35rem}
+.prog-lbl{font-size:12px;color:#666}.prog-val{font-size:12px;font-weight:600;font-family:monospace;color:#111}
+.prog-track{height:7px;background:#eee;border-radius:4px;overflow:hidden}
+.pf{height:100%;border-radius:4px;transition:width .4s}
+.pf-t{background:#1D9E75}.pf-a{background:#EF9F27}.pf-r{background:#E24B4A}.pf-b{background:#378ADD}
+
+/* FORMS */
+input,select{width:100%;padding:8px 11px;border:0.5px solid #d0d0d0;border-radius:8px;font-size:13px;background:#f8f8f8;color:#111;font-family:inherit}
+input:focus,select:focus{outline:2px solid #1D9E75;outline-offset:1px;background:#fff}
+.btn{padding:8px 18px;border:0.5px solid #ccc;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;background:#fff;color:#111;transition:all .15s}
+.btn:hover{background:#f0f0f0}
+.btn-primary{background:#1D9E75;color:#fff;border-color:transparent}.btn-primary:hover{background:#169066}
+.btn-pdf{background:#185FA5;color:#fff;border-color:transparent}.btn-pdf:hover{background:#0c4480}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:.75rem;align-items:end}
+.form-lbl{font-size:11px;font-weight:600;color:#666;margin-bottom:.3rem;display:block}
+
+/* CASH SWEEP LOG */
+.sw-log{list-style:none;padding:0}
+.sw-item{display:flex;gap:12px;padding:12px 0;border-bottom:0.5px solid #e0e0e0;align-items:flex-start}
+.sw-item:last-child{border-bottom:none}
+.sw-dot{width:9px;height:9px;border-radius:50%;background:#1D9E75;flex-shrink:0;margin-top:5px}
+.sw-dot.a{background:#EF9F27}
+.sw-body{flex:1;min-width:0}
+.sw-title{font-weight:600;font-size:13px;color:#111;margin-bottom:2px}
+.sw-meta{color:#888;font-size:11px}
+/* Ledger de categorização */
+.sw-ledger{margin-top:.6rem;border:0.5px solid #e8e8e8;border-radius:8px;overflow:hidden;font-size:12px}
+.sw-l-row{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border-bottom:0.5px solid #efefef;gap:8px}
+.sw-l-row:last-child{border-bottom:none}
+.sw-l-row.entrada{background:#f8f8f8}
+.sw-l-row.custo{background:#fff}
+.sw-l-row.total{background:#f0faf6;font-weight:600}
+.sw-l-row.inad{background:#fff9ee}
+.sw-l-key{color:#555;flex:1}
+.sw-l-row.custo .sw-l-key{color:#888}
+.sw-l-val{font-family:monospace;font-weight:500;white-space:nowrap}
+.sw-l-row.custo .sw-l-val{color:#A32D2D}
+.sw-l-row.total .sw-l-val{color:#085041;font-size:13px}
+.sw-l-row.inad .sw-l-val{color:#854F0B}
+/* Delete button */
+.btn-del{padding:5px 9px;border:0.5px solid #fcc;border-radius:6px;font-size:11px;cursor:pointer;background:#fff;color:#A32D2D;font-family:inherit;flex-shrink:0;transition:all .15s;margin-top:2px}
+.btn-del:hover{background:#FCEBEB;border-color:#F7C1C1}
+
+/* UTILS */
+.dv{height:0.5px;background:#e0e0e0;margin:.85rem 0}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+/* Garantias: 2 colunas espaçosas */
+.g-garant{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:720px){.g-garant{grid-template-columns:1fr}}
+.sl-row{display:flex;align-items:center;gap:12px;margin-bottom:.85rem}
+.sl-lbl{font-size:13px;color:#666;min-width:120px}
+.sl-val{font-size:14px;font-weight:600;font-family:monospace;min-width:56px}
+.sl-row input[type=range]{flex:1;accent-color:#1D9E75;padding:0;background:transparent;border:none}
+.params-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem}
+.param-item{padding:.75rem 1rem;background:#f8f8f8;border-radius:10px;border:0.5px solid #e0e0e0}
+.param-lbl{font-size:11px;color:#666;margin-bottom:.35rem;font-weight:600}
+.param-inp-row{display:flex;align-items:center;gap:6px}
+.param-unit{font-size:12px;color:#666;white-space:nowrap}
+.param-inp-row input{width:70px}
+.overflow-x{overflow-x:auto}
+/* EVA */
+.eva-item{border:0.5px solid #e0e0e0;border-radius:10px;padding:.85rem 1rem;margin-bottom:.6rem;background:#fff;transition:all .2s}
+.eva-item.triggered{background:#FCEBEB;border-color:#F7C1C1}
+.eva-head{display:flex;align-items:flex-start;gap:10px}
+.eva-cb{margin-top:3px;width:16px;height:16px;cursor:pointer;accent-color:#E24B4A;flex-shrink:0;padding:0;border:none;background:transparent}
+.eva-title{font-size:14px;font-weight:600;color:#111;margin:0 0 2px}
+.eva-sub{font-size:12px;color:#666}
+.eva-item.triggered .eva-title{color:#501313}.eva-item.triggered .eva-sub{color:#A32D2D}
+.accel-box{background:#0F1923;border-radius:14px;padding:1.5rem;margin-bottom:1rem;text-align:center}
+.accel-lbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem}
+.accel-num{font-size:36px;font-weight:700;font-family:monospace;color:#F7C1C1;line-height:1}
+.accel-rate{font-size:12px;color:rgba(255,255,255,.4);margin-top:.3rem}
+.accel-chips{display:flex;justify-content:center;gap:.5rem;margin-top:.85rem;flex-wrap:wrap}
+.accel-chip{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)}
+.step-box{display:flex;gap:10px;padding:10px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px;align-items:flex-start}
+.step-box:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;border-radius:50%;background:#E24B4A;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.save-bar{position:fixed;bottom:20px;right:20px;background:#1D9E75;color:#fff;padding:8px 18px;border-radius:100px;font-size:12px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.save-bar.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="save-bar" id="save-ind">Dados salvos</div>
+
+<div class="vr">
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div>
+      <p class="hdr-eyebrow">Mútuo Imobiliário · RDamásio Imóveis</p>
+      <h1 class="hdr-title">Condomínio Vistamar Coqueiro</h1>
+      <p class="hdr-sub">LT Empreendimentos SPE · Lucídio Portella · Luís Correia/PI · Assinatura 15/06/2026</p>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-pdf" onclick="gerarRelatorioMensal()" style="font-size:12px;padding:7px 14px">
+        <i class="ti ti-file-text" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Relatório de acompanhamento mensal
+      </button>
+      <span class="pill p-warn">Operação ativa</span>
+    </div>
+  </div>
+  <div class="hdr-stats">
+    <div class="hs"><p class="hs-l">Principal</p><p class="hs-v">R$ 12.000.000</p></div>
+    <div class="hs"><p class="hs-l">Taxa</p><p class="hs-v g">IPCA + 12,5%</p></div>
+    <div class="hs"><p class="hs-l">Saldo devedor</p><p class="hs-v r" id="h-saldo">R$ 12.000.000</p></div>
+    <div class="hs"><p class="hs-l">Valor pago</p><p class="hs-v g" id="h-sweep">R$ 0</p></div>
+    <div class="hs"><p class="hs-l">Recebíveis antigos</p><p class="hs-v" id="h-recebiv">R$ 4.713.391</p></div>
+    <div class="hs"><p class="hs-l">Unidades vendidas</p><p class="hs-v" id="h-units">0 / 25</p></div>
+    <div class="hs"><p class="hs-l">Vencimento</p><p class="hs-v w">15/06/2029</p></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-s="s-painel">Painel</button>
+  <button class="tab" data-s="s-estoque">Estoque e Recebíveis</button>
+  <button class="tab" data-s="s-sweep">Fluxo de pagamento</button>
+  <button class="tab" data-s="s-saldo">Saldo devedor</button>
+  <button class="tab danger" data-s="s-eva">Inadimplência</button>
+  <button class="tab" data-s="s-garant">Garantias</button>
+  <button class="tab" data-s="s-pend">Pendências</button>
+</div>
+
+<!-- PAINEL -->
+<div class="sec on" id="s-painel">
+  <div class="mg">
+    <div class="mc hero"><p class="mc-l">Saldo devedor</p><p class="mc-v" id="p-saldo">R$ 12.000.000</p><p class="mc-s">Principal + juros/correção acumulados − Cash Sweep</p></div>
+    <div class="mc ok"><p class="mc-l">Total amortizado</p><p class="mc-v" id="p-amort">R$ 0</p><p class="mc-s" id="p-amort-pct">0% do principal</p></div>
+    <div class="mc"><p class="mc-l">Custos deduzidos</p><p class="mc-v" id="p-custos">R$ 0</p><p class="mc-s">Corretagem + ITBI + IR</p></div>
+    <div class="mc ok"><p class="mc-l">Estoque disponível</p><p class="mc-v" id="p-estoque">R$ 16.023.523</p><p class="mc-s" id="p-estoque-s">25 unidades</p></div>
+    <div class="mc ok"><p class="mc-l">Cobertura total</p><p class="mc-v">1,73×</p><p class="mc-s">R$ 20,7mi ÷ R$ 12mi</p></div>
+  </div>
+
+  <div class="card">
+    <p class="card-h"><span class="bar bar-t"></span>Progresso da operação</p>
+    <div class="g2">
+      <div>
+        <div class="prog-w"><div class="prog-hdr"><span class="prog-lbl">Dívida amortizada</span><span class="prog-val" id="pp-amort">0%</span></div><div class="prog-track"><div class="pf pf-t" id="pp-amort-bar" style="width:0%"></div></div></div>
+        <div class="prog-w"><div class="prog-hdr"><span class="prog-lbl">Estoque vendido</span><span class="prog-val" id="pp-sold">0 / 25</span></div><div class="prog-track"><div class="pf pf-a" id="pp-sold-bar" style="width:0%"></div></div></div>
+      </div>
+      <div>
+        <div class="prog-w"><div class="prog-hdr"><span class="prog-lbl">Prazo decorrido (36 meses)</span><span class="prog-val">~1%</span></div><div class="prog-track"><div class="pf pf-b" style="width:1%"></div></div></div>
+        <div class="prog-w"><div class="prog-hdr"><span class="prog-lbl">Custos sobre bruto das vendas</span><span class="prog-val" id="pp-custo-pct">—</span></div><div class="prog-track"><div class="pf pf-r" id="pp-custo-bar" style="width:0%"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <p class="card-h"><span class="bar bar-b"></span>Parâmetros de custo</p>
+      <p style="font-size:12px;color:#666;margin-bottom:.85rem">Percentuais aplicados automaticamente em cada venda registrada. Defina o custo de venda fixo com o cliente quando confirmado.</p>
+      <div class="params-grid">
+        <div class="param-item"><p class="param-lbl">Corretagem</p><div class="param-inp-row"><input type="number" id="p-corret" step="0.1" min="0" max="20" style="width:70px"><span class="param-unit">%</span></div></div>
+        <div class="param-item"><p class="param-lbl">ITBI</p><div class="param-inp-row"><input type="number" id="p-itbi" step="0.1" min="0" max="5" style="width:70px"><span class="param-unit">%</span></div></div>
+        <div class="param-item"><p class="param-lbl">IR estimado</p><div class="param-inp-row"><input type="number" id="p-ir" step="0.1" min="0" max="30" style="width:70px"><span class="param-unit">%</span></div></div>
+        <div class="param-item"><p class="param-lbl">Custo cobrança</p><div class="param-inp-row"><input type="number" id="p-cobr" step="0.1" min="0" max="30" style="width:70px"><span class="param-unit">%</span></div></div>
+        <div class="param-item"><p class="param-lbl">Check escrow</p><div class="param-inp-row"><select id="p-freq" style="width:100%"><option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option></select></div></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveParams()" style="margin-top:.85rem;font-size:12px;width:100%">Salvar parâmetros</button>
+    </div>
+    <div class="card">
+      <p class="card-h"><span class="bar bar-r"></span>Alertas operacionais</p>
+      <ul style="list-style:none;padding:0" id="alertas-list">
+        <!-- Renderizado dinamicamente por renderAlertas() -->
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-h"><span class="bar bar-a"></span>Salvar dados</p>
+    <p style="font-size:12px;color:#666;margin-bottom:.85rem">Tudo que você registra (vendas, recebimentos, garantias, etc.) já é salvo automaticamente neste navegador — na próxima vez que abrir este arquivo aqui, o sistema continua de onde parou. Use o backup abaixo para guardar uma cópia de segurança ou para levar os dados para outro computador/navegador.</p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="saveLocal()" style="font-size:12px;padding:6px 14px">
+        <i class="ti ti-device-floppy" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Salvar agora
+      </button>
+      <button class="btn" onclick="exportarDados()" style="font-size:12px;padding:6px 14px">
+        <i class="ti ti-download" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Exportar backup (.json)
+      </button>
+      <button class="btn" onclick="document.getElementById('import-file-input').click()" style="font-size:12px;padding:6px 14px">
+        <i class="ti ti-upload" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Importar backup (.json)
+      </button>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importarDados(this)">
+    </div>
+    <div id="storage-info" style="display:none;margin-top:.75rem;font-size:12px;color:#666"></div>
+  </div>
+</div>
+
+<!-- ESTOQUE -->
+<div class="sec" id="s-estoque">
+  <div class="mg">
+    <div class="mc hero"><p class="mc-l">Disponíveis</p><p class="mc-v" id="e-disp-v">25 unid.</p><p class="mc-s" id="e-disp-s">R$ 16.023.523</p></div>
+    <div class="mc ok"><p class="mc-l">Unidades vendidas</p><p class="mc-v" id="e-sold-v">0</p><p class="mc-s" id="e-sold-s">R$ 0 amortizado</p></div>
+    <div class="mc warn"><p class="mc-l">Recebíveis atualizados</p><p class="mc-v" id="e-receb-saldo">R$ 0</p><p class="mc-s">Saldo ainda a receber</p></div>
+    <div class="mc danger"><p class="mc-l">Custos deduzidos</p><p class="mc-v" id="e-custos-tot">R$ 0</p><p class="mc-s">Corretagem + ITBI + IR</p></div>
+    <div class="mc ok"><p class="mc-l">Recebíveis liquidados</p><p class="mc-v" id="e-receb-recebido">R$ 0</p><p class="mc-s">Total já recebido</p></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:.85rem">
+      <p class="card-h" style="margin:0"><span class="bar bar-t"></span>Estoque e Recebíveis — Registrar</p>
+      <div style="display:flex;border:0.5px solid #ccc;border-radius:8px;overflow:hidden">
+        <button type="button" id="e-tipo-unidade-btn" class="btn" style="border:none;border-radius:0;font-size:12px;padding:6px 14px;background:#0F1923;color:#fff" onclick="setTipoLancamentoEstoque('unidade')">Unidade</button>
+        <button type="button" id="e-tipo-recebiveis-btn" class="btn" style="border:none;border-radius:0;font-size:12px;padding:6px 14px" onclick="setTipoLancamentoEstoque('recebiveis')">Recebíveis</button>
+      </div>
+    </div>
+
+    <div id="e-form-unidade">
+      <div class="form-row">
+        <div><label class="form-lbl">Unidade</label><select id="e-sel"><option value="">Selecionar...</option></select></div>
+        <div><label class="form-lbl">Data da venda</label><input type="date" id="e-date"></div>
+        <div><label class="form-lbl">Valor bruto (R$)</label><input type="number" id="e-bruto-inp" placeholder="0" step="1000"></div>
+        <div><label class="form-lbl">Outros custos (R$)</label><input type="number" id="e-outros" placeholder="0" step="100"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn btn-primary" onclick="registerSale()" style="width:100%">Registrar venda</button></div>
+      </div>
+      <div id="e-preview" style="display:none;padding:.75rem 1rem;background:#f8f8f8;border-radius:8px;margin-top:.5rem;font-size:12px;color:#444">
+        <strong>Prévia da alocação:</strong>
+        <span id="e-prev-corret" style="margin-left:.75rem"></span>
+        <span id="e-prev-itbi" style="margin-left:.75rem"></span>
+        <span id="e-prev-ir" style="margin-left:.75rem"></span>
+        <span id="e-prev-liq" style="margin-left:.75rem;font-weight:600;color:#085041"></span>
+      </div>
+    </div>
+
+    <div id="e-form-recebiveis" style="display:none">
+      <div class="form-row">
+        <div><label class="form-lbl">Data do recebimento</label><input type="date" id="e2-mes"></div>
+        <div><label class="form-lbl">Unidade de origem (Quadro B)</label><select id="e2-origem"><option value="">Não especificado / múltiplas unidades</option></select></div>
+        <div><label class="form-lbl">Total recebido (R$)</label><input type="number" id="e2-val" placeholder="0"></div>
+        <div><label class="form-lbl">Inadimplência do período (R$)</label><input type="number" id="e2-inad" placeholder="0"></div>
+      </div>
+      <p style="font-size:11px;color:#888;margin:.5rem 0 .35rem">Deduções sobre o valor recebido (opcional):</p>
+      <div class="form-row">
+        <div><label class="form-lbl">Corretagem (R$)</label><input type="number" id="e2-corret" placeholder="0"></div>
+        <div><label class="form-lbl">ITBI (R$)</label><input type="number" id="e2-itbi" placeholder="0"></div>
+        <div><label class="form-lbl">IR (R$)</label><input type="number" id="e2-ir" placeholder="0"></div>
+        <div><label class="form-lbl">Outros (R$)</label><input type="number" id="e2-outros" placeholder="0"></div>
+      </div>
+      <div id="e2-preview" style="display:none;padding:.6rem .85rem;background:#f8f8f8;border-radius:8px;margin:.35rem 0 .75rem;font-size:12px;color:#444">
+        <strong>Líquido a amortizar:</strong> <span id="e2-prev-liq" style="font-weight:600;color:#085041"></span>
+      </div>
+      <button class="btn btn-primary" onclick="registerReceipt()" style="width:100%">Registrar recebimento</button>
+    </div>
+  </div>
+  <div class="card overflow-x">
+    <p class="card-h"><span class="bar bar-b"></span>Inventário de unidades</p>
+    <table class="tbl" style="min-width:700px">
+      <thead><tr><th>#</th><th>Tipo</th><th>Unidade</th><th>Matrícula</th><th class="nr">Valor tabela</th><th>Status</th><th>Data venda</th><th class="nr">Bruto</th><th class="nr">Custos</th><th class="nr">Amortização 051</th></tr></thead>
+      <tbody id="e-tbody"></tbody>
+      <tfoot id="e-tfoot"></tfoot>
+    </table>
+  </div>
+
+  <!-- Quadro B: 22 unidades já comercializadas -->
+  <div class="card overflow-x">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+      <p class="card-h" style="margin:0"><span class="bar bar-a"></span>Quadro B — Unidades já comercializadas (posição de recebíveis mai/2026)</p>
+      <span class="pill p-neutral" style="font-size:11px">22 unidades · R$ 4.713.391,44 em recebíveis</span>
+    </div>
+    <p style="font-size:12px;color:#666;margin-bottom:.85rem">Unidades cujos contratos de compra e venda foram celebrados antes de junho/2026. Os recebíveis foram cedidos fiduciariamente à RDamásio junto com o cancelamento do CRI Vistamar 47ª. Adicione o nome do comprador quando disponível.</p>
+    <table class="tbl" style="min-width:820px">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Unidade</th>
+          <th>Matrícula</th>
+          <th>Data venda</th>
+          <th>Comprador</th>
+          <th class="nr">Valor contrato (líq. corret.)</th>
+          <th class="nr">Vencido</th>
+          <th class="nr">A vencer</th>
+          <th class="nr">Total (mai/2026)</th>
+        </tr>
+      </thead>
+      <tbody id="qb-tbody"></tbody>
+      <tfoot id="qb-tfoot"></tfoot>
+    </table>
+    <p style="font-size:11px;color:#888;margin-top:.75rem">⚠ Nomes dos adquirentes omitidos nos documentos contratuais em observância à Lei n° 13.709/2018 (LGPD). Adicione internamente quando obtiver autorização. · ⚠ Unidade B9-201A: valor reflete saldo confessado em Aditivo n°01 de 27/01/2026.</p>
+  </div>
+</div>
+
+<!-- FLUXO DE PAGAMENTO -->
+<div class="sec" id="s-sweep">
+  <div class="mg" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="mc hero"><p class="mc-l">Valor pago / Amortizado 051</p><p class="mc-v" id="sw-amort">R$ 0</p><p class="mc-s">Aplicado ao principal da dívida</p></div>
+    <div class="mc warn"><p class="mc-l">Custos deduzidos total</p><p class="mc-v" id="sw-custos">R$ 0</p><p class="mc-s">Corretagem + ITBI + IR + outros</p></div>
+    <div class="mc ok"><p class="mc-l">Recebíveis contratos antigos</p><p class="mc-v" id="sw-parcelas">R$ 0</p><p class="mc-s">22 unidades já vendidas · base R$ 4.713.391</p></div>
+    <div class="mc"><p class="mc-l">Saldo recebíveis antigos</p><p class="mc-v" id="sw-recebiv-saldo">R$ 4.713.391</p><p class="mc-s">Ainda a receber de contratos antigos</p></div>
+  </div>
+
+  <!-- Legenda de categorização -->
+  <div class="card" style="background:#f8f9fa;border-color:#e0e0e0">
+    <p class="card-h" style="margin-bottom:.6rem"><span class="bar bar-b"></span>Como cada entrada é categorizada</p>
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:12px">
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:#f8f8f8;border:1px solid #ddd"></div><span style="color:#555">Bruto recebido — valor total da venda ou parcela</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:#fff;border:1px solid #fcc"></div><span style="color:#A32D2D">(-) Custos — corretagem, ITBI, IR, outros</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:#f0faf6;border:1px solid #9FE1CB"></div><span style="color:#085041">→ Amortizado 051 Capital — reduz o saldo devedor</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:#f0f0f0;border:1px solid #ccc"></div><span style="color:#666">Mês sem movimento — período revisado sem entrada</span></div>
+    </div>
+  </div>
+
+  <!-- Registro de mês sem movimento -->
+  <div class="card" style="background:#f8f9fa;border:0.5px dashed #ccc">
+    <p class="card-h"><span class="bar" style="background:#888"></span>Registrar mês sem movimento</p>
+    <p style="font-size:12px;color:#666;margin-bottom:.85rem">Use quando não houver nenhuma entrada no mês — mantém a série temporal íntegra e confirma que o período foi revisado. Para registrar vendas de unidade ou recebíveis, use a aba Estoque e Recebíveis.</p>
+    <div class="form-row">
+      <div><label class="form-lbl">Mês de referência</label><input type="month" id="sw-sem-mes"></div>
+      <div><label class="form-lbl">Observação (opcional)</label><input type="text" id="sw-sem-obs" placeholder="ex: sem vendas no mês"></div>
+    </div>
+    <button class="btn" onclick="registerSemMovimento()" style="width:100%;border-color:#ccc;color:#555">Marcar como revisado · sem movimento</button>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <p class="card-h" style="margin:0"><span class="bar bar-t"></span>Histórico de lançamentos por competência</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="filterSweep('all')">Todos</button>
+        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="filterSweep('venda')">Vendas</button>
+        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="filterSweep('parcela')">Parcelas</button>
+        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="filterSweep('sem_movimento')">Sem movimento</button>
+      </div>
+    </div>
+    <ul class="sw-log" id="sw-log"><li style="font-size:13px;color:#888;padding:.5rem 0">Nenhuma entrada ainda.</li></ul>
+  </div>
+</div>
+
+<!-- SALDO DEVEDOR -->
+<div class="sec" id="s-saldo">
+  <div style="text-align:center;padding:1.75rem 1rem;background:#0F1923;border-radius:14px;margin-bottom:1rem">
+    <p style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem">Saldo devedor estimado (principal)</p>
+    <p style="font-size:42px;font-weight:700;font-family:monospace;color:#9FE1CB;line-height:1" id="sd-big">R$ 12.000.000</p>
+    <p style="font-size:12px;color:rgba(255,255,255,.4);margin-top:.35rem">Principal menos valor amortizado acumulado · IPCA + 12,5% a.a.</p>
+    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:.85rem;flex-wrap:wrap">
+      <span style="padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)">Emissão: 15/06/2026</span>
+      <span style="padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)">Vencimento: 15/06/2029</span>
+      <span style="padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;background:rgba(255,255,255,.07);color:#FAC775" id="sd-sweep-chip">Atualizado em: —</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="card-h"><span class="bar bar-b"></span>Data de Pagamento (Anexo I, item 2)</p>
+    <p style="font-size:11px;color:#888;margin:-4px 0 8px">O contrato define a Data de Pagamento como o 2º dia útil após o crédito na Conta Centralizadora — é nela que o saldo é atualizado e a amortização é aplicada. Ligue a opção abaixo para considerar esse prazo; desligado, usa a própria data do recebimento (mais simples).</p>
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="chk-2dias-uteis" onchange="toggle2DiasUteis()" style="width:16px;height:16px;cursor:pointer">
+      Considerar 2 dias úteis após o recebimento como Data de Pagamento
+    </label>
+  </div>
+
+  <div class="card">
+    <p class="card-h"><span class="bar bar-b"></span>Premissas do cenário</p>
+    <p style="font-size:11px;color:#888;margin:-4px 0 8px">Usado apenas na projeção futura ("Otimista/Moderado/Conservador") — o saldo devedor real usa o IPCA mensal efetivo abaixo, não este slider.</p>
+    <div class="sl-row"><span class="sl-lbl">IPCA (a.a.)</span><input type="range" id="sd-ipca" min="3" max="10" step="0.5" value="5" style="flex:1;width:auto;padding:0;background:transparent;border:none"><span class="sl-val" id="sd-ipca-v">5,0%</span></div>
+    <div class="sl-row" style="margin:0"><span class="sl-lbl">Taxa total</span><span style="flex:1;font-size:12px;color:#666">IPCA + 12,5% a.a. (fixo contratual)</span><span class="sl-val" id="sd-total-v" style="color:#085041">17,5%</span></div>
+  </div>
+
+  <div class="card">
+    <p class="card-h"><span class="bar bar-t"></span>IPCA mensal efetivo (usado no saldo devedor real)</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem">
+      <p id="ipca-info" style="font-size:11px;color:#888;margin:0;flex:1;min-width:220px">
+        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Buscando IPCA atualizado no IBGE…
+      </p>
+      <button class="btn" onclick="fetchIPCA()" style="font-size:11px;padding:4px 10px;color:#378ADD;border-color:#B5D4F4">
+        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-2px;margin-right:4px"></i>Tentar buscar de novo
+      </button>
+    </div>
+    <p style="font-size:11px;color:#888;margin-bottom:.6rem">Se a busca automática falhar (bloqueio de rede, arquivo aberto localmente etc.), informe manualmente o índice publicado pelo IBGE para cada competência — ele é usado exatamente como se tivesse vindo da API.</p>
+    <div class="form-row" style="align-items:flex-end">
+      <div><label class="form-lbl">Competência</label><input type="month" id="ipca-man-mes"></div>
+      <div><label class="form-lbl">IPCA do mês (%)</label><input type="number" step="0.01" id="ipca-man-val" placeholder="ex: 0,07"></div>
+      <button class="btn btn-primary" onclick="saveIPCAManual()" style="height:38px">Salvar</button>
+    </div>
+    <div id="ipca-man-list" style="margin-top:.75rem;font-size:12px"></div>
+  </div>
+
+  <!-- Saldo hoje — cálculo diário exato -->
+  <div class="mg" style="margin-bottom:1rem">
+    <div class="mc hero" style="padding:1.5rem">
+      <p class="mc-l">Saldo devedor hoje</p>
+      <p class="mc-v" id="sd-hoje" style="font-size:28px">Calculando…</p>
+      <p class="mc-s" id="sd-hoje-detail">Principal + juros diários acumulados − amortizações</p>
+    </div>
+    <div class="mc" style="background:#f8f8f8">
+      <p class="mc-l">Juros acumulados até hoje</p>
+      <p class="mc-v" id="sd-juros-hoje" style="font-size:20px">—</p>
+      <p class="mc-s" id="sd-juros-hoje-detail">Desde 15/06/2026 · cálculo diário</p>
+    </div>
+    <div class="mc ok">
+      <p class="mc-l">Prazo decorrido (dias corridos)</p>
+      <p class="mc-v" id="sd-dias" style="font-size:28px">—</p>
+      <p class="mc-s">Da emissão (15/06/2026) · base 365 dias corridos (Cláusula 5.1)</p>
+    </div>
+    <div class="mc">
+      <p class="mc-l">Taxa diária (base 365)</p>
+      <p class="mc-v" id="sd-taxa-dia" style="font-size:20px">—</p>
+      <p class="mc-s">Equivalente à taxa anual contratual</p>
+    </div>
+  </div>
+  <div class="card overflow-x">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem">
+      <p class="card-h" style="margin:0"><span class="bar bar-t"></span>Histórico de saldo devedor por competência</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;align-items:center;gap:.4rem;padding:4px 10px;background:#f8f8f8;border:0.5px solid #ccc;border-radius:8px">
+          <label for="rel-data-fim" style="font-size:11px;color:#666;white-space:nowrap">Relatório até:</label>
+          <input type="date" id="rel-data-fim" min="2026-06-15" style="font-size:12px;border:none;background:transparent">
+        </div>
+        <button class="btn btn-pdf" id="btn-rel-pdf" onclick="gerarRelatorioMensal()" disabled style="font-size:12px;padding:6px 14px;opacity:.5;cursor:not-allowed">
+          <i class="ti ti-file-text" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Relatório em PDF (com fluxo diário)
+        </button>
+        <button class="btn" id="btn-rel-excel" onclick="exportarExcelSaldo()" disabled style="font-size:12px;padding:6px 14px;color:#1D6F42;border-color:#9FD9BD;opacity:.5;cursor:not-allowed">
+          <i class="ti ti-file-spreadsheet" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Exportar Excel (.xls, com fórmulas)
+        </button>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#888;margin:-.5rem 0 .85rem" id="rel-data-fim-hint">Início fixo em 15/06/2026 (data de emissão). Selecione até quando o relatório em PDF e a planilha Excel devem considerar — se não escolher nada, considera até hoje. O Excel traz abas "Dia a dia" e "Dia a dia (simplificado)" — a completa com fórmula e apoio por Data de Pagamento, e a simplificada só com os valores prontos.</p>
+    <p style="font-size:12px;color:#666;margin-bottom:.85rem">Evolução mês a mês do saldo devedor considerando juros acumulados (IPCA + 12,5% a.a.) e amortizações recebidas via Conta Centralizadora.</p>
+    <table class="tbl" style="min-width:650px">
+      <thead>
+        <tr>
+          <th>Período</th>
+          <th class="nr">Saldo inicial</th>
+          <th class="nr">Juros acumulados</th>
+          <th class="nr">Amortizado no mês</th>
+          <th class="nr">Saldo final</th>
+          <th>Situação</th>
+        </tr>
+      </thead>
+      <tbody id="sd-hist-tbody"></tbody>
+      <tfoot id="sd-hist-tfoot"></tfoot>
+    </table>
+    <p style="font-size:11px;color:#888;margin-top:.6rem">Por competência: 1) saldo atualizado pelo IPCA do MÊS ANTERIOR à competência — defasagem fixa de um mês, nunca o índice do próprio mês (Cláusula 5.3/Anexo I: "mês imediatamente anterior à data de atualização"); 2) juros de 12,5% a.a. sobre o saldo já atualizado, base 365 dias corridos — Cláusula 5.1; 3) amortização do Cash Sweep do mês deduzida por último — Cláusula 6.1(i). Se nem o mês anterior tiver sido publicado, recua mais um mês.</p>
+  </div>
+
+  <!-- Projeção do mês corrente — hipotética, separada da tabela real -->
+  <div class="card" id="sd-proj-mes-card" style="display:none;background:#fafafa;border:0.5px dashed #ccc">
+    <p class="card-h" style="color:#888"><span class="bar" style="background:#aaa"></span>Projeção — fim do mês corrente (hipotética)</p>
+    <p style="font-size:11px;color:#888;margin-bottom:.75rem">Não faz parte do histórico real nem soma no total acumulado. Simula o saldo devedor se o mês fechasse hoje, mantendo o mesmo IPCA usado até agora e a mesma amortização já recebida — só estende a contagem de dias até o último dia do mês.</p>
+    <table class="tbl" style="min-width:650px">
+      <thead>
+        <tr>
+          <th>Período</th>
+          <th class="nr">Saldo inicial</th>
+          <th class="nr">Juros do período</th>
+          <th class="nr">Amortizado</th>
+          <th class="nr">Saldo final projetado</th>
+        </tr>
+      </thead>
+      <tbody id="sd-proj-mes-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Histórico de saldo devedor DIA A DIA -->
+  <div class="card overflow-x">
+    <p class="card-h"><span class="bar bar-t"></span>Histórico de saldo devedor dia a dia</p>
+    <p style="font-size:12px;color:#666;margin-bottom:.85rem">Mesma metodologia da tabela por competência (Cláusulas 5.1/5.3/5.4/6.1(i)), só que decomposta dia a dia desde a emissão até hoje.</p>
+    <div style="max-height:420px;overflow-y:auto;border:0.5px solid #e0e0e0;border-radius:8px">
+      <table class="tbl" style="min-width:850px;margin-bottom:0">
+        <thead style="position:sticky;top:0;background:#fff;z-index:1">
+          <tr>
+            <th>Data</th>
+            <th class="nr">Saldo inicial</th>
+            <th class="nr">Juros do dia</th>
+            <th class="nr">Juros acumulado no mês</th>
+            <th class="nr">Juros acumulado (total)</th>
+            <th class="nr">Amortizado no dia</th>
+            <th class="nr">Saldo final</th>
+          </tr>
+        </thead>
+        <tbody id="sd-hist-dia-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Projeção de quitação simplificada -->
+  <div class="card overflow-x">
+    <p class="card-h"><span class="bar bar-b"></span>Projeção de quitação por cenário</p>
+    <table class="tbl">
+      <thead><tr><th>Cenário</th><th>Ritmo de vendas</th><th class="nr">Quitação estimada</th><th class="nr">Juros estimados</th></tr></thead>
+      <tbody id="sd-proj"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- INADIMPLÊNCIA -->
+<div class="sec" id="s-eva">
+  <div id="accel-section" style="display:none">
+    <div class="accel-box">
+      <p class="accel-lbl">Saldo acelerado — vencimento antecipado ativo</p>
+      <p class="accel-num" id="accel-num">—</p>
+      <p class="accel-rate">Principal + IPCA + 12,5% a.a. acumulado + Multa 10% + Mora 1%/mês + Honorários 10%</p>
+      <div class="accel-chips" id="accel-chips"></div>
+    </div>
+    <div class="card" style="border-color:#F7C1C1;background:#FCEBEB">
+      <p class="card-h" style="color:#791F1F"><span class="bar bar-r"></span>Sequência de execução das garantias</p>
+      <div class="step-box"><div class="step-num">1</div><div><p style="font-weight:600;margin:0;font-size:13px">Notificação extrajudicial ao devedor e avalista</p><p style="font-size:12px;color:#666;margin:2px 0 0">Apresentar o saldo acelerado e cobrar pagamento imediato</p></div></div>
+      <div class="step-box"><div class="step-num">2</div><div><p style="font-weight:600;margin:0;font-size:13px">Bloqueio da Conta Centralizadora</p><p style="font-size:12px;color:#666;margin:2px 0 0">Redirecionar todos os recebíveis para RDamásio</p></div></div>
+      <div class="step-box"><div class="step-num">3</div><div><p style="font-weight:600;margin:0;font-size:13px">Excussão da CF de Recebíveis</p><p style="font-size:12px;color:#666;margin:2px 0 0">Consolidar todos os recebíveis cedidos fiduciariamente</p></div></div>
+      <div class="step-box"><div class="step-num">4</div><div><p style="font-weight:600;margin:0;font-size:13px">Excussão da AF de Imóveis (Mat. 5.507 + filhas)</p><p style="font-size:12px;color:#666;margin:2px 0 0">Consolidar propriedade das unidades em estoque</p></div></div>
+      <div class="step-box"><div class="step-num">5</div><div><p style="font-weight:600;margin:0;font-size:13px">Excussão da AF de Quotas da LT</p><p style="font-size:12px;color:#666;margin:2px 0 0">Assumir controle total da empresa</p></div></div>
+      <div class="step-box"><div class="step-num">6</div><div><p style="font-weight:600;margin:0;font-size:13px">Execução judicial — aval pessoal</p><p style="font-size:12px;color:#666;margin:2px 0 0">Acionamento do patrimônio pessoal de Lucídio e Terezinha</p></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+      <p class="card-h" style="margin:0"><span class="bar bar-r"></span>Gatilhos de vencimento antecipado</p>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <label class="form-lbl" style="display:inline;margin:0">Data do evento:</label>
+        <input type="date" id="eva-date" style="width:145px" onchange="saveEVADate()">
+      </div>
+    </div>
+    <div id="eva-list"></div>
+  </div>
+  <div class="card">
+    <p class="card-h"><span class="bar bar-r"></span>Encargos moratórios — referência contratual</p>
+    <table class="tbl">
+      <thead><tr><th>Encargo</th><th>Base de cálculo</th><th class="nr">Contratual</th></tr></thead>
+      <tbody>
+        <tr><td>Multa</td><td>Sobre o saldo devedor total</td><td class="nr"><strong>10%</strong></td></tr>
+        <tr><td>Juros de mora</td><td>Sobre o saldo devedor, ao mês</td><td class="nr"><strong>1% a.m.</strong></td></tr>
+        <tr><td>Honorários advocatícios</td><td>Sobre o total (saldo + multa + mora)</td><td class="nr"><strong>10%</strong></td></tr>
+        <tr><td>Custo de cobrança</td><td>A definir após análise do contrato</td><td class="nr" style="color:#888"><em id="cobr-ref">a definir</em></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GARANTIAS — layout espaçoso 2 colunas -->
+<div class="sec" id="s-garant">
+  <div class="g-garant">
+
+    <div class="card">
+      <p class="card-h"><span class="bar bar-a"></span>AF de imóveis — Matrícula 5.507 + filhas</p>
+      <table class="tbl" style="margin-bottom:1rem">
+        <tbody>
+          <tr><td style="color:#666;width:38%">Credora</td><td>RDamásio Imóveis Ltda.</td></tr>
+          <tr><td style="color:#666">Grau</td><td>1° grau (após cancelamento do CRI)</td></tr>
+          <tr><td style="color:#666">Obs.</td><td style="font-size:12px;color:#666">Casas (RIP 1113.000068989) — sem AF de imóvel (terreno de marinha). Somente CF de recebíveis.</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Checklist registral</p>
+      <ul class="cl" id="g1-list"></ul>
+    </div>
+
+    <div class="card">
+      <p class="card-h"><span class="bar bar-t"></span>Cessão fiduciária de recebíveis</p>
+      <table class="tbl" style="margin-bottom:1rem">
+        <tbody>
+          <tr><td style="color:#666;width:38%">Cedente</td><td>LT Empreendimentos SPE</td></tr>
+          <tr><td style="color:#666">Cessionária</td><td>RDamásio Imóveis Ltda.</td></tr>
+          <tr><td style="color:#666">Valor estimado</td><td style="font-family:monospace;font-weight:600;color:#085041">R$ 20.736.914,90</td></tr>
+          <tr><td style="color:#666">Conta Centralizadora</td><td>Aberta — verificar status</td></tr>
+          <tr><td style="color:#666">Atualização</td><td>Bimestral (relatório LT → RDamásio)</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Checklist</p>
+      <ul class="cl" id="g2-list"></ul>
+    </div>
+
+    <div class="card">
+      <p class="card-h"><span class="bar bar-r"></span>Alienação fiduciária de quotas da LT</p>
+      <table class="tbl" style="margin-bottom:1rem">
+        <tbody>
+          <tr><td style="color:#666;width:38%">Fiduciantes</td><td>Lucídio Portella Nunes Filho (90%) + Terezinha de Jesus Fonseca Portella Nunes (10%)</td></tr>
+          <tr><td style="color:#666">Total de quotas</td><td style="font-family:monospace">200.000 quotas · valor nominal R$ 200.000</td></tr>
+          <tr><td style="color:#666">Registro</td><td>JUCEPI — NIRE 22200508553</td></tr>
+          <tr><td style="color:#666">Grau</td><td>1° grau (após cancelamento AF quotas do CRI)</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Checklist registral</p>
+      <ul class="cl" id="g3-list"></ul>
+    </div>
+
+    <div class="card">
+      <p class="card-h"><span class="bar bar-b"></span>Aval pessoal + obrigações contínuas</p>
+      <table class="tbl" style="margin-bottom:1rem">
+        <tbody>
+          <tr><td style="color:#666;width:38%">Avalistas</td><td>Lucídio Portella Nunes Filho + Terezinha de Jesus Fonseca Portella Nunes</td></tr>
+          <tr><td style="color:#666">Natureza</td><td>Solidária e autônoma — respondem como principais pagadores</td></tr>
+          <tr><td style="color:#666">Outorga uxória</td><td>Concedida expressamente no instrumento</td></tr>
+          <tr><td style="color:#666">Status</td><td><span class="pill p-ok">Constituído na assinatura</span></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Obrigações pós-liberação</p>
+      <ul class="cl" id="g4-list"></ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- PENDÊNCIAS -->
+<div class="sec" id="s-pend">
+
+  <!-- Resumo executivo -->
+  <div class="mg" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div class="mc danger"><p class="mc-l">Registros críticos pendentes</p><p class="mc-v" id="pd-reg">—</p><p class="mc-s">AF Imóveis + AF Quotas + CF Recebíveis</p></div>
+    <div class="mc warn"><p class="mc-l">Compradores não notificados</p><p class="mc-v" id="pd-notif">—</p><p class="mc-s">Das 22 unidades do Quadro B</p></div>
+    <div class="mc danger"><p class="mc-l">Compradores com vencido</p><p class="mc-v">5</p><p class="mc-s">R$ 588.747 em atraso (mai/2026)</p></div>
+    <div class="mc warn"><p class="mc-l">Contratos não disponíveis</p><p class="mc-v">1</p><p class="mc-s">B9-201A — contrato-base ausente</p></div>
+  </div>
+
+  <!-- Bloco jurídico -->
+  <div class="card" style="border-left:3px solid #EF9F27;background:#FAEEDA22">
+    <p class="card-h"><span class="bar bar-a"></span>O que depende do jurídico — consultar antes de acionar</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:.25rem">
+      <div>
+        <p style="font-size:12px;font-weight:600;color:#633806;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">Cobrança dos compradores (Quadro B)</p>
+        <ul style="list-style:none;padding:0">
+          <li style="display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid #FAC77566;font-size:13px"><span style="color:#EF9F27;flex-shrink:0">○</span>Confirmar se as notificações do Anexo III foram enviadas e se há comprovante de recebimento de cada comprador</li>
+          <li style="display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid #FAC77566;font-size:13px"><span style="color:#EF9F27;flex-shrink:0">○</span>Atualizar a posição dos R$ 588.747 em vencido (posição é de mai/2026 — podem já ter pago ou aumentado)</li>
+          <li style="display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid #FAC77566;font-size:13px"><span style="color:#EF9F27;flex-shrink:0">○</span>Carta de cobrança formal aos compradores inadimplentes (quem assina, prazo, qual canal)</li>
+          <li style="display:flex;gap:8px;padding:6px 0;font-size:13px"><span style="color:#EF9F27;flex-shrink:0">○</span>Obter o contrato-base da B9-201A (contrato de 27/07/2021 não disponibilizado)</li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;color:#633806;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">Acionamento das garantias (se Lucídio não pagar)</p>
+        <ul style="list-style:none;padding:0">
+          <li style="display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid #FAC77566;font-size:13px"><span style="color:#E24B4A;flex-shrink:0">○</span>Sequência e timing correto para acionar cada camada (CF Recebíveis → AF Imóveis → AF Quotas → aval)</li>
+          <li style="display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid #FAC77566;font-size:13px"><span style="color:#E24B4A;flex-shrink:0">○</span>Se algum comprador contestou a cessão dos recebíveis após a notificação</li>
+          <li style="display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid #FAC77566;font-size:13px"><span style="color:#E24B4A;flex-shrink:0">○</span>Prazo e procedimento de consolidação da propriedade fiduciária (AF Imóveis)</li>
+          <li style="display:flex;gap:8px;padding:6px 0;font-size:13px"><span style="color:#E24B4A;flex-shrink:0">○</span>Necessidade de ação judicial para algum caso específico ou execução extrajudicial suficiente</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registros pendentes (do que já temos dos contratos) -->
+  <div class="g2">
+    <div class="card">
+      <p class="card-h"><span class="bar bar-r"></span>Registros e garantias — o que falta (dos contratos)</p>
+      <ul class="cl" id="pd-garant-list"></ul>
+      <p style="font-size:11px;color:#888;margin-top:.75rem">Prazo contratual: 30 DU da liberação (15/06/2026) para AF Imóveis e AF Quotas. Conta Centralizadora: ≤ 5 DU.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-h"><span class="bar bar-a"></span>Notificação dos compradores (Anexo III)</p>
+      <p style="font-size:12px;color:#666;margin-bottom:.85rem">O Contrato de CF exige que todos os compradores do Quadro B sejam notificados nos termos do art. 290 do Código Civil para que os pagamentos passem a ser feitos na Conta Centralizadora da RDamásio (≤ 10 DU da assinatura).</p>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="min-width:520px">
+          <thead><tr><th>Unidade</th><th>Matrícula</th><th>Vencido (mai/26)</th><th>Notificado</th><th>Comprovante</th></tr></thead>
+          <tbody id="pd-notif-tbody"></tbody>
+          <tfoot id="pd-notif-tfoot"></tfoot>
+        </table>
+      </div>
+      <p style="font-size:11px;color:#888;margin-top:.75rem">Marque conforme for confirmando com o jurídico. Compradores com vencido destacados — prioridade de cobrança.</p>
+    </div>
+  </div>
+
+  <!-- Contratos de compra e venda -->
+  <div class="card">
+    <p class="card-h"><span class="bar bar-b"></span>Contratos de compra e venda — disponibilidade</p>
+    <p style="font-size:12px;color:#666;margin-bottom:.85rem">Para acionar um comprador inadimplente é necessário ter o contrato original em mãos. Marque os que já foram obtidos.</p>
+    <div style="overflow-x:auto">
+      <table class="tbl" style="min-width:580px">
+        <thead><tr><th>Unidade</th><th>Matrícula</th><th>Data venda</th><th>Vencido</th><th>Contrato disponível</th><th>Obs.</th></tr></thead>
+        <tbody id="pd-contratos-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /vr -->
+
+<script>
+const P0=12000000;
+const EMISSAO=new Date(2026,5,15); // 15/06/2026
+const fmt=v=>'R$\u00a0'+Math.round(v).toLocaleString('pt-BR');
+const fmtP=v=>v.toFixed(1).replace('.',',')+' %';
+
+// Dias corridos entre duas datas
+function contarDC(start,end){
+  return Math.max(0,Math.floor((end-start)/(1000*60*60*24)));
+}
+
+function monthKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+function diasNoMes(mesStr){const[y,m]=mesStr.split('-').map(Number);return new Date(y,m,0).getDate();}
+function mesAnterior(mesStr){let[y,m]=mesStr.split('-').map(Number);m--;if(m<1){m=12;y--;}return`${y}-${String(m).padStart(2,'0')}`;}
+
+// IPCA de referência de uma competência — DEFASAGEM FIXA DE UM MÊS (Cláusula 5.3/Anexo I:
+// "mês imediatamente anterior à data de atualização"). Nunca usa o índice do próprio mês da
+// competência — junho usa maio, julho usa junho, agosto usa julho — permanentemente. Isso é
+// necessário porque a Mutuária precisa fechar e reportar à Receita o resultado de cada mês
+// logo em seguida, sem esperar o IPCA do próprio mês (divulgado só depois do dia 15 do mês
+// seguinte). Se nem o mês anterior tiver sido publicado ainda, recua mais um mês (fallback).
+function getIPCARef(mesStr){
+  let[y,m]=mesAnterior(mesStr).split('-').map(Number);
+  const alvo=mesAnterior(mesStr);
+  for(let i=0;i<24;i++){
+    const key=`${y}-${String(m).padStart(2,'0')}`;
+    if(D.ipcaMensal&&D.ipcaMensal[key]!=null){
+      return{valor:D.ipcaMensal[key]/100,sourceMonth:key,isFallback:key!==alvo};
+    }
+    m--;if(m<1){m=12;y--;}
+  }
+  // Nenhum índice publicado disponível (ex.: sem internet) — estimativa a partir do
+  // cenário configurado no slider, convertida para equivalente mensal
+  const ipcaSlider=parseFloat(document.getElementById('sd-ipca')?.value)||5;
+  return{valor:Math.pow(1+ipcaSlider/100,1/12)-1,sourceMonth:null,isFallback:true};
+}
+
+// ── EVOLUÇÃO DO SALDO DEVEDOR (Cláusulas 5.1/5.3/5.4/6.1(i)) ──────────────
+// ── MOTOR DE CÁLCULO POR "DATA DE PAGAMENTO" (Anexo I, itens 2 e 4, do Contrato) ──
+// O contrato define que CADA recebimento de Cash Sweep é uma "Data de Pagamento":
+// nela, o saldo é atualizado (IPCA + juros pro rata temporis, contados desde a
+// ÚLTIMA Data de Pagamento — não desde o início do mês calendário) e a amortização
+// é aplicada NA HORA. O saldo já reduzido vira a base do período seguinte — não
+// fica represado até o fim do mês. Fórmula idêntica à do Anexo I (VNa, FatorJuros),
+// só que o intervalo [dataInicio, dataFim] de cada cálculo é definido pelos eventos
+// reais de recebimento, não pelo calendário.
+function calcularLeg(saldoInicial,dataInicio,dataFim){
+  const n=Math.max(0,contarDC(dataInicio,dataFim));
+  const mesRef=monthKey(dataFim);
+  const{valor:ipcaRef,sourceMonth}=getIPCARef(mesRef);
+  const nu=sourceMonth?diasNoMes(sourceMonth):30;
+  const fatorIpca=Math.pow(1+ipcaRef,n/nu);
+  const vna=saldoInicial*fatorIpca;
+  const fatorJuros=Math.pow(1.125,n/365);
+  const saldoAntesAmort=vna*fatorJuros;
+  return{dataInicio:new Date(dataInicio),dataFim:new Date(dataFim),n,ipcaRef,sourceMonth,nu,
+    fatorIpca,vna,fatorJuros,saldoAntesAmort,atualizacao:vna-saldoInicial,juros:saldoAntesAmort-vna};
+}
+
+// Avança N dias úteis (pula sáb/dom) a partir de uma data — usado para simular
+// o "2º dia útil subsequente ao crédito" do Anexo I, item 2, quando a opção
+// estiver ligada (não considera feriados, só fins de semana).
+function addBusinessDays(date,n){
+  const d=new Date(date);
+  let added=0;
+  while(added<n){
+    d.setDate(d.getDate()+1);
+    const dow=d.getDay();
+    if(dow!==0&&dow!==6)added++;
+  }
+  return d;
+}
+
+function toggle2DiasUteis(){
+  const chk=document.getElementById('chk-2dias-uteis');
+  D.dataPagamento2DiasUteis=!!(chk&&chk.checked);
+  saveLocal();renderAll();
+}
+
+// Pontos de fechamento entre a Data de Liberação e ateDate: cada recebimento de
+// Cash Sweep (Data de Pagamento) E cada virada de mês calendário. As viradas de
+// mês são necessárias mesmo sem recebimento: sem elas, um período longo sem
+// movimento aplicaria retroativamente o índice de IPCA mais recente a TODOS os
+// dias já passados, em vez de fechar cada mês com o índice daquele mês.
+function checkpointsAte(ateDate){
+  const eventos=(D.sweepLog||[])
+    .filter(e=>e.tipo!=='sem_movimento'&&(e.amort||0)>0)
+    .map(e=>{
+      const dataRecebimento=new Date(e.date+'T00:00:00');
+      const dataPagamento=D.dataPagamento2DiasUteis?addBusinessDays(dataRecebimento,2):dataRecebimento;
+      return{tipo:'evento',data:dataPagamento,dataRecebimento,amort:e.amort,desc:e.desc};
+    })
+    .filter(e=>e.data<=ateDate);
+  const viradas=[];
+  let cursor=new Date(EMISSAO.getFullYear(),EMISSAO.getMonth(),1);
+  let iter=0;
+  while(iter<240){
+    iter++;
+    const fimMes=new Date(cursor.getFullYear(),cursor.getMonth()+1,0);
+    if(fimMes>=ateDate)break;
+    if(fimMes>EMISSAO)viradas.push({tipo:'virada',data:fimMes,amort:0});
+    cursor=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);
+  }
+  return[...eventos,...viradas].sort((a,b)=>a.data-b.data);
+}
+
+// Percorre os pontos de fechamento (Datas de Pagamento + viradas de mês) até
+// ateDate, amortizando na hora quando há recebimento, e fecha com um "corte" até
+// ateDate para saber o saldo devedor hoje/na data escolhida.
+function saldoNaData(ateDate){
+  const pontos=checkpointsAte(ateDate);
+  let saldo=P0,dataAnterior=EMISSAO;
+  const legs=[];
+  pontos.forEach(p=>{
+    const leg=calcularLeg(saldo,dataAnterior,p.data);
+    const saldoFinal=Math.max(0,leg.saldoAntesAmort-(p.amort||0));
+    legs.push({...leg,tipo:p.tipo,saldoInicial:saldo,amort:p.amort||0,saldoFinal,data:p.data,dataRecebimento:p.dataRecebimento,desc:p.desc});
+    saldo=saldoFinal;dataAnterior=p.data;
+  });
+  let legFinal=null;
+  if(contarDC(dataAnterior,ateDate)>0||pontos.length===0){
+    const leg=calcularLeg(saldo,dataAnterior,ateDate);
+    legFinal={...leg,tipo:'corte',saldoInicial:saldo,amort:0,saldoFinal:Math.max(0,leg.saldoAntesAmort),data:new Date(ateDate)};
+  }
+  return{legs,legFinal,saldo:legFinal?legFinal.saldoFinal:saldo};
+}
+
+// Agrega os "legs" (por Data de Pagamento) em linhas por MÊS CALENDÁRIO — de
+// 15/06/2026 (Data de Liberação) até ateDate, uma linha por mês mesmo quando não
+// houve nenhum recebimento naquele mês (para o fluxo não "pular" direto pro mês
+// do primeiro recebimento). O cálculo oficial continua sendo por evento, acima —
+// isto aqui é só a visão mensal usada no Histórico, na Memória de Cálculo e no PDF.
+function computeEvolucao(ateDate){
+  ateDate=ateDate||new Date();
+  const{legs}=saldoNaData(ateDate);
+  const rows=[];
+  let cursor=new Date(EMISSAO.getFullYear(),EMISSAO.getMonth(),1);
+  const limite=new Date(ateDate.getFullYear(),ateDate.getMonth(),1);
+  let dataAnterior=EMISSAO,saldoAnterior=P0,iter=0;
+  while(cursor<=limite&&iter<120){
+    iter++;
+    const mes=monthKey(cursor);
+    const fimMes=new Date(cursor.getFullYear(),cursor.getMonth()+1,0);
+    const fimPeriodo=fimMes<ateDate?fimMes:ateDate;
+    const eventosDoMes=legs.filter(l=>monthKey(l.data)===mes);
+    const amortMes=eventosDoMes.reduce((s,l)=>s+(l.amort||0),0);
+    const saldoFinalMes=saldoNaData(fimPeriodo).saldo;
+    const legRepresentativo=eventosDoMes.length?eventosDoMes[eventosDoMes.length-1]:calcularLeg(saldoAnterior,dataAnterior,fimPeriodo);
+    rows.push({mes,saldoInicial:saldoAnterior,dataInicio:new Date(dataAnterior),dataFim:new Date(fimPeriodo),
+      juros:saldoFinalMes-saldoAnterior+amortMes,amort:amortMes,saldoFinal:saldoFinalMes,
+      n:legRepresentativo.n,ipcaRef:legRepresentativo.ipcaRef,sourceMonth:legRepresentativo.sourceMonth,
+      nu:legRepresentativo.nu,fatorIpca:legRepresentativo.fatorIpca,vna:legRepresentativo.vna,
+      fatorJuros:legRepresentativo.fatorJuros,saldoAntesAmort:legRepresentativo.saldoAntesAmort});
+    saldoAnterior=saldoFinalMes;
+    dataAnterior=fimPeriodo;
+    cursor=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);
+  }
+  const totalJuros=rows.reduce((s,r)=>s+r.juros,0);
+  const totalAmort=rows.reduce((s,r)=>s+r.amort,0);
+  const saldoFinal=rows.length?rows[rows.length-1].saldoFinal:P0;
+  const{legFinal}=saldoNaData(ateDate);
+  return{rows,eventos:legs,legFinal,totalJuros,totalAmort,saldoFinal};
+}
+
+function toISODate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+// Data de corte escolhida no campo "Relatório até" (aba Saldo devedor) — usada pelo
+// PDF e pelo Excel para travar o período do relatório. Sem seleção, usa hoje.
+function getRelatorioDataCorte(){
+  const inp=document.getElementById('rel-data-fim');
+  if(inp&&inp.value){
+    const d=new Date(inp.value+'T23:59:59');
+    if(!isNaN(d.getTime()))return d;
+  }
+  return new Date();
+}
+
+// Decomposição dia a dia da mesma evolução (Cláusulas 5.1/5.3/5.4/6.1(i)) — reaproveita
+// computeEvolucao para cada data, garantindo que bate exatamente com a tabela mensal.
+function computeEvolucaoDiaria(ateDate){
+  ateDate=ateDate||new Date();
+  const rows=[];
+  let d=new Date(EMISSAO);
+  let saldoAnterior=P0;
+  let jurosAcumulado=0;
+  let jurosAcumuladoMes=0;
+  let amortAcumuladoMes=0;
+  let mesAtualLoop=monthKey(d);
+  let iter=0;
+  // Amortização "no dia" precisa bater com a Data de Pagamento EFETIVA (já com o
+  // deslocamento de 2 dias úteis aplicado, se a opção estiver ligada) — não com a
+  // data bruta do recebimento, senão o resíduo (juros do dia) dá negativo no dia
+  // em que o saldo realmente cai.
+  const amortPorDataPagamento={};
+  (D.sweepLog||[]).forEach(e=>{
+    if(e.tipo==='sem_movimento'||!(e.amort>0))return;
+    const dataRecebimento=new Date(e.date+'T00:00:00');
+    const dataPagamento=D.dataPagamento2DiasUteis?addBusinessDays(dataRecebimento,2):dataRecebimento;
+    const key=toISODate(dataPagamento);
+    amortPorDataPagamento[key]=(amortPorDataPagamento[key]||0)+e.amort;
+  });
+  while(d<=ateDate&&iter<2000){
+    iter++;
+    const mesDoDia=monthKey(d);
+    if(mesDoDia!==mesAtualLoop){jurosAcumuladoMes=0;amortAcumuladoMes=0;mesAtualLoop=mesDoDia;}
+    const evoDia=computeEvolucao(d);
+    const rMes=evoDia.rows[evoDia.rows.length-1]; // linha da competência corrente, cortada exatamente neste dia
+    const saldoFinalDia=evoDia.saldoFinal;
+    const amortDia=amortPorDataPagamento[toISODate(d)]||0;
+    amortAcumuladoMes+=amortDia;
+    const jurosDia=saldoFinalDia-saldoAnterior+amortDia;
+    jurosAcumulado+=jurosDia;
+    jurosAcumuladoMes+=jurosDia;
+    const ultimoCheckpoint=evoDia.eventos.length?evoDia.eventos[evoDia.eventos.length-1]:null;
+    rows.push({data:new Date(d),mes:mesDoDia,saldoInicial:saldoAnterior,
+      n:rMes.n,ipcaRef:rMes.ipcaRef,nu:rMes.nu,fatorIpca:rMes.fatorIpca,fatorJuros:rMes.fatorJuros,
+      saldoAntesAmort:rMes.saldoAntesAmort,saldoInicialMes:rMes.saldoInicial,amortAcumuladoMes,
+      dataFechamentoAnterior:ultimoCheckpoint?ultimoCheckpoint.data:new Date(EMISSAO),
+      saldoNoFechamento:ultimoCheckpoint?ultimoCheckpoint.saldoFinal:P0,
+      juros:jurosDia,jurosAcumulado,jurosAcumuladoMes,amort:amortDia,saldoFinal:saldoFinalDia});
+    saldoAnterior=saldoFinalDia;
+    d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);
+  }
+  return rows;
+}
+
+
+const UNITS=[
+  {id:1,tipo:'Apartamento',local:'Bloco 01 · Apto 203C',mat:'8422',val:462532.98},
+  {id:2,tipo:'Apartamento',local:'Bloco 02 · Apto 201A',mat:'8429',val:487346.19},
+  {id:3,tipo:'Apartamento',local:'Bloco 02 · Apto 203C',mat:'8431',val:471121.68},
+  {id:4,tipo:'Apartamento',local:'Bloco 03 · Apto 201A',mat:'8438',val:487346.19},
+  {id:5,tipo:'Apartamento',local:'Bloco 05 · Apto 203C',mat:'8458',val:489504.84},
+  {id:6,tipo:'Apartamento',local:'Bloco 06 · Apto 201A',mat:'8465',val:517944.73},
+  {id:7,tipo:'Apartamento',local:'Bloco 07 · Apto 201A',mat:'8474',val:517944.73},
+  {id:8,tipo:'Apartamento',local:'Bloco 07 · Apto 202B',mat:'8475',val:495615.38},
+  {id:9,tipo:'Apartamento',local:'Bloco 08 · Apto 202B',mat:'8484',val:499906.02},
+  {id:10,tipo:'Apartamento',local:'Bloco 08 · Apto 203C',mat:'8485',val:495692.63},
+  {id:11,tipo:'Apartamento',local:'Bloco 09 · Apto 202B',mat:'8493',val:472928.85},
+  {id:12,tipo:'Apartamento',local:'Bloco 09 · Apto 203C',mat:'8494',val:477337.13},
+  {id:13,tipo:'Apartamento',local:'Bloco 10 · Apto 201A',mat:'8501',val:503080.46},
+  {id:14,tipo:'Apartamento',local:'Bloco 10 · Apto 202B',mat:'8502',val:472282.08},
+  {id:15,tipo:'Apartamento',local:'Bloco 10 · Apto 203C',mat:'8503',val:477925.92},
+  {id:16,tipo:'Apartamento',local:'Bloco 11 · Apto 202B',mat:'8511',val:467881.38},
+  {id:17,tipo:'Apartamento',local:'Bloco 11 · Apto 203C',mat:'8512',val:471974.71},
+  {id:18,tipo:'Apartamento',local:'Bloco 12 · Apto 202B',mat:'8520',val:455157.56},
+  {id:19,tipo:'Sala Comercial',local:'Centro Comercial · Sala 01',mat:'8562',val:300000},
+  {id:20,tipo:'Sala Comercial',local:'Centro Comercial · Sala 02',mat:'8563',val:300000},
+  {id:21,tipo:'Sala Comercial',local:'Centro Comercial · Sala 03',mat:'8564',val:300000},
+  {id:22,tipo:'Restaurante',local:'Centro Comercial · Restaurante',mat:'8565',val:1400000},
+  {id:23,tipo:'Casa',local:'Casa F1A (mobiliada)',mat:'RIP',val:2000000},
+  {id:24,tipo:'Casa',local:'Casa F2C',mat:'RIP',val:1500000},
+  {id:25,tipo:'Casa',local:'Casa F3A',mat:'RIP',val:1500000},
+];
+
+// ── Quadro B — 22 unidades já comercializadas (Quadro B do Contrato CF, posição mai/2026)
+const SOLD_UNITS_QB=[
+  {unidade:'B10-101A (Térreo)',  mat:'8498', dataVenda:'28/07/2021', valorContrato:289520.00,   vencido:0,         aVencer:57727.83,   total:57727.83},
+  {unidade:'B11-102B (Térreo)', mat:'8508', dataVenda:'29/07/2021', valorContrato:271802.14,   vencido:38673.13,  aVencer:182779.06,  total:221452.19},
+  {unidade:'B11-103C (Térreo)', mat:'8509', dataVenda:'29/07/2021', valorContrato:274194.94,   vencido:41460.43,  aVencer:184388.21,  total:225848.64},
+  {unidade:'B11-201A (2° Pav.)',mat:'8510', dataVenda:'25/07/2021', valorContrato:264902.90,   vencido:0,         aVencer:165105.93,  total:165105.93},
+  {unidade:'B12-103C (Térreo)', mat:'8518', dataVenda:'23/03/2022', valorContrato:204427.14,   vencido:0,         aVencer:25759.34,   total:25759.34},
+  {unidade:'B1-302B (Cobertura)',mat:'8424',dataVenda:'05/02/2026', valorContrato:586075.55,   vencido:0,         aVencer:334869.74,  total:334869.74},
+  {unidade:'B2-102B (Térreo)',  mat:'8427', dataVenda:'21/08/2025', valorContrato:516216.20,   vencido:0,         aVencer:92322.87,   total:92322.87},
+  {unidade:'B3-202B (2° Pav.)', mat:'8439', dataVenda:'07/09/2021', valorContrato:292560.00,   vencido:183645.87, aVencer:172994.12,  total:356639.99},
+  {unidade:'B3-301A (Cobertura)',mat:'8441',dataVenda:'29/07/2022', valorContrato:561388.68,   vencido:0,         aVencer:254876.47,  total:254876.47},
+  {unidade:'B3-302B (Cobertura)',mat:'8442',dataVenda:'31/01/2022', valorContrato:473799.20,   vencido:0,         aVencer:235821.53,  total:235821.53},
+  {unidade:'B3-303C (Cobertura)',mat:'8443',dataVenda:'09/08/2021', valorContrato:440220.00,   vencido:0,         aVencer:263142.42,  total:263142.42},
+  {unidade:'B4-201A (2° Pav.)', mat:'8447', dataVenda:'16/08/2021', valorContrato:313775.00,   vencido:0,         aVencer:187559.64,  total:187559.64},
+  {unidade:'B4-203C (2° Pav.)', mat:'8449', dataVenda:'14/02/2023', valorContrato:464670.73,   vencido:84727.58,  aVencer:432207.27,  total:516934.85},
+  {unidade:'B4-303C (Cobertura)',mat:'8452',dataVenda:'09/08/2021', valorContrato:445220.00,   vencido:0,         aVencer:261976.01,  total:261976.01},
+  {unidade:'B6-203C (2° Pav.)', mat:'8467', dataVenda:'29/07/2021', valorContrato:262890.00,   vencido:0,         aVencer:223296.48,  total:223296.48},
+  {unidade:'B6-303C (Cobertura)',mat:'8470',dataVenda:'29/07/2021', valorContrato:387600.00,   vencido:0,         aVencer:124941.12,  total:124941.12},
+  {unidade:'B7-303C (Cobertura)',mat:'8479',dataVenda:'26/05/2022', valorContrato:626359.07,   vencido:0,         aVencer:346173.61,  total:346173.61},
+  {unidade:'B8-301A (Cobertura)',mat:'8486',dataVenda:'17/08/2021', valorContrato:387600.00,   vencido:0,         aVencer:118503.41,  total:118503.41},
+  {unidade:'B8-303C (Cobertura)',mat:'8488',dataVenda:'27/07/2021', valorContrato:393300.00,   vencido:0,         aVencer:251982.99,  total:251982.99},
+  {unidade:'B9-201A (2° Pav.) ⚠',mat:'8492',dataVenda:'27/07/2021',valorContrato:182727.23,  vencido:182727.23, aVencer:0,          total:182727.23,nota:'Aditivo n°01 de 27/01/2026 — contrato-base não disponibilizado'},
+  {unidade:'B9-301A (Cobertura)',mat:'8495',dataVenda:'27/07/2021', valorContrato:343800.00,   vencido:0,         aVencer:200000.00,  total:200000.00},
+  {unidade:'B9-302B (Cobertura)',mat:'8496',dataVenda:'19/08/2021', valorContrato:374498.66,   vencido:57512.98,  aVencer:8216.17,    total:65729.15},
+];
+
+const EVAS=[
+  {id:'e1',title:'Não pagamento de qualquer obrigação pecuniária no vencimento',sub:'Cura: 2 dias úteis após notificação'},
+  {id:'e2',title:'Descumprimento de obrigação não-pecuniária do contrato',sub:'Cura: 5 dias úteis (ou prazo específico da cláusula)'},
+  {id:'e3',title:'Pedido ou decretação de falência, RJ ou recuperação extrajudicial',sub:'Automático — sem cura'},
+  {id:'e4',title:'Descumprimento dos contratos de garantia (AF Imóveis, CF Recebíveis, AF Quotas)',sub:'Cura: 5 dias úteis'},
+  {id:'e5',title:'Alienação, oneração ou disposição dos imóveis sem anuência prévia da RDamásio',sub:'Automático'},
+  {id:'e6',title:'Distrato, cancelamento ou resilição de contrato de venda sem anuência da RDamásio',sub:'Automático'},
+  {id:'e7',title:'Não entrega do relatório bimestral de recebíveis no prazo',sub:'Cura: 5 dias úteis'},
+  {id:'e8',title:'Prestação de informações falsas ou incorretas à RDamásio',sub:'Automático'},
+  {id:'e9',title:'Deterioração ou desaparecimento das garantias sem reposição',sub:'Prazo de reforço: 5 dias úteis'},
+  {id:'e10',title:'Protesto de títulos (valor a confirmar — analisar contrato)',sub:'A definir após análise do contrato'},
+];
+
+const KEY='vistamar:v2';
+let D={params:{corret:5,itbi:2,ir:0,cobr:0,freq:'mensal'},soldUnits:{},sweepLog:[],receiptLog:[],guarantees:{},evas:{},evaDate:'',compradores:{},attachments:{},notificacoes:{},contratos:{},ipcaMensal:{'2026-01':0.33,'2026-02':0.70,'2026-03':0.88,'2026-04':0.67,'2026-05':0.58,'2026-06':0.16,'2026-07':0.07},dataPagamento2DiasUteis:false};
+let sweepFilter='all';
+
+function loadLocal(){
+  try{
+    const s=localStorage.getItem(KEY);
+    if(s){
+      const parsed=JSON.parse(s);
+      const ipcaSeed=D.ipcaMensal; // preserva os índices reais pré-carregados no arquivo
+      // Merge seguro: mantém defaults para chaves novas que não existiam na versão salva
+      D={...D,...parsed};
+      // ipcaMensal precisa de merge (não sobrescrita): combina o seed do arquivo com o
+      // que já estava salvo/buscado no navegador, sem perder nenhum dos dois
+      D.ipcaMensal={...ipcaSeed,...(parsed.ipcaMensal||{})};
+      // Garantir que sub-objetos existam
+      if(!D.compradores)D.compradores={};
+      if(!D.attachments)D.attachments={};
+      if(!D.notificacoes)D.notificacoes={};
+      if(!D.contratos)D.contratos={};
+      if(!D.ipcaMensal)D.ipcaMensal={};
+    }
+  }catch(e){console.warn('Erro ao carregar dados:', e);}
+  applyParams();renderAll();verificarStorage();
+}
+
+function saveLocal(){
+  try{
+    // Não armazenar conteúdo de arquivos (base64) — só metadados — para não exceder o limite de 5MB
+    const dadosParaSalvar={...D};
+    if(dadosParaSalvar.attachments){
+      const attMeta={};
+      Object.entries(dadosParaSalvar.attachments).forEach(([k,v])=>{
+        attMeta[k]={nome:v.nome,tipo:v.tipo,data_upload:v.data_upload}; // sem o campo 'data' (base64)
+      });
+      dadosParaSalvar.attachments=attMeta;
+    }
+    const json=JSON.stringify(dadosParaSalvar);
+    localStorage.setItem(KEY,json);
+    // Feedback visual — com null-check
+    const ind=document.getElementById('save-ind');
+    if(ind){
+      ind.style.background='#1D9E75';
+      ind.textContent='Dados salvos ✓';
+      ind.classList.add('show');
+      setTimeout(()=>{if(ind)ind.classList.remove('show');},2000);
+    }
+    verificarStorage();
+  }catch(e){
+    console.error('Erro ao salvar:', e);
+    const ind=document.getElementById('save-ind');
+    if(ind){
+      ind.style.background='#E24B4A';
+      ind.textContent='Erro ao salvar — localStorage cheio?';
+      ind.classList.add('show');
+      setTimeout(()=>{if(ind)ind.classList.remove('show');},4000);
+    }
+    alert('Erro ao salvar dados no navegador. Possíveis causas:\n1. localStorage cheio (limite ~5MB)\n2. Modo privado/incógnito\n\nUse "Exportar dados" no painel para salvar uma cópia de segurança.');
+  }
+}
+
+function applyParams(){
+  document.getElementById('p-corret').value=D.params.corret;
+  document.getElementById('p-itbi').value=D.params.itbi;
+  document.getElementById('p-ir').value=D.params.ir;
+  document.getElementById('p-cobr').value=D.params.cobr;
+  document.getElementById('p-freq').value=D.params.freq;
+  document.getElementById('cobr-ref').textContent=D.params.cobr>0?D.params.cobr+'%':'a definir';
+  const chk2dias=document.getElementById('chk-2dias-uteis');
+  if(chk2dias)chk2dias.checked=!!D.dataPagamento2DiasUteis;
+}
+
+function saveParams(){
+  D.params.corret=parseFloat(document.getElementById('p-corret').value)||0;
+  D.params.itbi=parseFloat(document.getElementById('p-itbi').value)||0;
+  D.params.ir=parseFloat(document.getElementById('p-ir').value)||0;
+  D.params.cobr=parseFloat(document.getElementById('p-cobr').value)||0;
+  D.params.freq=document.getElementById('p-freq').value;
+  saveLocal();applyParams();
+}
+
+function calcCosts(bruto){
+  const corret=bruto*D.params.corret/100;
+  const itbi=bruto*D.params.itbi/100;
+  const ir=bruto*D.params.ir/100;
+  const totalCost=corret+itbi+ir;
+  return{corret,itbi,ir,totalCost,liq:bruto-totalCost};
+}
+
+// Amortização total = soma de todos os sweepLog.amort (inclui vendas E parcelas)
+function getTotalAmort(){return D.sweepLog.reduce((s,e)=>s+(e.amort||0),0);}
+function getTotalCustos(){return D.sweepLog.reduce((s,e)=>s+(e.custos||0),0);}
+// Parcelas: só para exibição no Cash Sweep (não entra em getSaldo — já está em sweepLog.amort)
+function getTotalParcelasDisplay(){return D.receiptLog.reduce((s,r)=>s+r.val,0);}
+// Saldo usa APENAS sweepLog.amort para evitar dupla contagem
+// Saldo devedor = Principal + Juros/Atualização acumulados − Cash Sweep recebido
+// (Cláusula 6.1(i): amortização aplica-se primeiro a juros e correção, só o
+// remanescente reduz o principal — nunca é dedução direta do Principal)
+function getSaldo(){return computeEvolucao(new Date()).saldoFinal;}
+
+function registerSale(){
+  const uid=parseInt(document.getElementById('e-sel').value);
+  const date=document.getElementById('e-date').value;
+  const bruto=parseFloat(document.getElementById('e-bruto-inp').value)||0;
+  const outros=parseFloat(document.getElementById('e-outros').value)||0;
+  if(!uid||!date||!bruto){alert('Preencha todos os campos.');return;}
+  const u=UNITS.find(x=>x.id===uid);
+  const{corret,itbi,ir,totalCost,liq}=calcCosts(bruto);
+  const totalCostComOutros=totalCost+outros;
+  const liqFinal=bruto-totalCostComOutros;
+  D.soldUnits[uid]={date,bruto,corret,itbi,ir,outros,custos:totalCostComOutros,liq:liqFinal};
+  // guardar uid no log para poder deletar
+  D.sweepLog.push({date,tipo:'venda',uid,desc:`Venda: ${u.local}`,bruto,custos:totalCostComOutros,amort:liqFinal,corret,itbi,ir,outros});
+  saveLocal();renderAll();
+  document.getElementById('e-date').value='';
+  document.getElementById('e-bruto-inp').value='';
+  document.getElementById('e-outros').value='';
+  document.getElementById('e-preview').style.display='none';
+}
+
+// Alternador Unidade / Recebíveis no card "Registrar venda de unidade" (aba Estoque)
+function setTipoLancamentoEstoque(tipo){
+  const bU=document.getElementById('e-tipo-unidade-btn');
+  const bR=document.getElementById('e-tipo-recebiveis-btn');
+  const fU=document.getElementById('e-form-unidade');
+  const fR=document.getElementById('e-form-recebiveis');
+  if(tipo==='unidade'){
+    fU.style.display='';fR.style.display='none';
+    bU.style.background='#0F1923';bU.style.color='#fff';
+    bR.style.background='';bR.style.color='';
+  }else{
+    fU.style.display='none';fR.style.display='';
+    bR.style.background='#0F1923';bR.style.color='#fff';
+    bU.style.background='';bU.style.color='';
+  }
+}
+
+// Registra um recebível a partir do card da aba Estoque, reaproveitando a mesma lógica
+// de registerReceipt() (copia os valores para os campos originais na aba Fluxo de pagamento)
+function registerReceipt(){
+  const data=document.getElementById('e2-mes').value; // "YYYY-MM-DD" — dia exato, usado no cálculo do saldo devedor
+  const val=parseFloat(document.getElementById('e2-val').value)||0;
+  const inad=parseFloat(document.getElementById('e2-inad').value)||0;
+  const corret=parseFloat(document.getElementById('e2-corret').value)||0;
+  const itbi=parseFloat(document.getElementById('e2-itbi').value)||0;
+  const ir=parseFloat(document.getElementById('e2-ir').value)||0;
+  const outros=parseFloat(document.getElementById('e2-outros').value)||0;
+  const origemMat=document.getElementById('e2-origem').value;
+  const origemUnidade=origemMat==='TESTE-SIC'?'SIC-Sistema e Gestão Ltda. (teste)':(origemMat?SOLD_UNITS_QB.find(u=>u.mat===origemMat)?.unidade||'':'');
+  if(!data||!val){alert('Preencha a data e o valor.');return;}
+  const custos=corret+itbi+ir+outros;
+  const liq=Math.max(0,val-custos);
+  const receiptIdx=D.receiptLog.length;
+  const descOrigem=origemUnidade?` · ${origemUnidade}`:'';
+  const dataLabel=new Date(data+'T00:00:00').toLocaleDateString('pt-BR');
+  D.receiptLog.push({mes:data,val,inad,corret,itbi,ir,outros,custos,origemMat,origemUnidade});
+  D.sweepLog.push({date:data,tipo:'parcela',receiptIdx,desc:`Parcelas contratos antigos — ${dataLabel}${descOrigem}`,bruto:val,custos,amort:liq,corret,itbi,ir,outros,inad,origemMat,origemUnidade});
+  saveLocal();renderAll();
+  ['e2-val','e2-inad','e2-corret','e2-itbi','e2-ir','e2-outros'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('e2-origem').value='';
+  document.getElementById('e2-preview').style.display='none';
+}
+
+// EDITAR CUSTOS DIRETAMENTE NO LANÇAMENTO
+function updateEntryCost(logIdx, newVal){
+  const entry=D.sweepLog[logIdx];
+  if(!entry)return;
+  const custos=parseFloat(newVal)||0;
+  entry.custos=custos;
+  entry.amort=Math.max(0,entry.bruto-custos);
+  // Sync com soldUnits se for uma venda
+  if(entry.tipo==='venda'&&entry.uid&&D.soldUnits[entry.uid]){
+    D.soldUnits[entry.uid].custos=custos;
+    D.soldUnits[entry.uid].liq=entry.amort;
+  }
+  saveLocal();
+  renderPanel();renderEstoque();renderSaldo();
+  // Atualizar totais do sweep sem re-renderizar a lista (evita perder o foco do input)
+  const soParcelas=D.sweepLog.filter(e=>e.tipo==='parcela').reduce((s,e)=>s+(e.bruto||0),0);
+  document.getElementById('sw-amort').textContent=fmt(getTotalAmort());
+  document.getElementById('sw-custos').textContent=fmt(getTotalCustos());
+  document.getElementById('sw-parcelas').textContent=fmt(soParcelas);
+  document.getElementById('h-saldo').textContent=fmt(getSaldo());
+  document.getElementById('h-sweep').textContent=fmt(getTotalAmort());
+  // Atualizar o valor de amortização na linha específica sem re-renderizar
+  const amortEl=document.getElementById(`amort-val-${logIdx}`);
+  if(amortEl)amortEl.textContent=fmt(entry.amort);
+}
+
+// UPLOAD DE COMPROVANTE DE PAGAMENTO
+function uploadComprovante(logIdx, input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){alert('Arquivo muito grande. Use arquivos até 5 MB.');input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    if(!D.attachments)D.attachments={};
+    D.attachments[logIdx]={nome:file.name,tipo:file.type,data:ev.target.result,data_upload:new Date().toLocaleDateString('pt-BR')};
+    saveLocal();renderSweepLog();
+  };
+  reader.readAsDataURL(file);
+}
+
+// EXCLUIR LANÇAMENTO
+function deleteEntry(logIdx){
+  if(!confirm('Excluir este lançamento? Esta ação não pode ser desfeita.'))return;
+  const entry=D.sweepLog[logIdx];
+  if(entry){
+    // Se era uma venda, remove da lista de unidades vendidas
+    if(entry.tipo==='venda'&&entry.uid){
+      delete D.soldUnits[entry.uid];
+    }
+    // Se era uma parcela, remove do receiptLog
+    if(entry.tipo==='parcela'&&entry.receiptIdx!==undefined){
+      D.receiptLog.splice(entry.receiptIdx,1);
+      // Reindexar os receiptIdx dos demais entries parcela
+      D.sweepLog.forEach((e,i)=>{
+        if(i!==logIdx&&e.tipo==='parcela'&&e.receiptIdx!==undefined&&e.receiptIdx>entry.receiptIdx){
+          e.receiptIdx--;
+        }
+      });
+    }
+    D.sweepLog.splice(logIdx,1);
+    // Limpar attachment desse entry e reindexar os demais
+    if(D.attachments){
+      delete D.attachments[logIdx];
+      const newAtt={};
+      Object.entries(D.attachments).forEach(([k,v])=>{
+        const ki=parseInt(k);
+        if(ki>logIdx)newAtt[ki-1]=v;
+        else if(ki<logIdx)newAtt[ki]=v;
+      });
+      D.attachments=newAtt;
+    }
+  }
+  saveLocal();renderAll();
+}
+
+// REGISTRAR MÊS SEM MOVIMENTO
+function registerSemMovimento(){
+  const mes=document.getElementById('sw-sem-mes').value;
+  const obs=document.getElementById('sw-sem-obs').value||'Período revisado — sem entrada no mês';
+  if(!mes){alert('Selecione o mês de referência.');return;}
+  // Verificar se já existe entrada para esse mês
+  const jaExiste=D.sweepLog.find(e=>e.date===mes+'-01'&&e.tipo==='sem_movimento');
+  if(jaExiste){alert('Já existe um registro "sem movimento" para este mês.');return;}
+  D.sweepLog.push({date:mes+'-01',tipo:'sem_movimento',desc:`Sem movimento — ${mes}`,obs,bruto:0,custos:0,amort:0});
+  saveLocal();renderAll();
+  document.getElementById('sw-sem-mes').value='';
+  document.getElementById('sw-sem-obs').value='';
+}
+
+function filterSweep(f){sweepFilter=f;renderSweepLog();}
+
+function renderAll(){
+  renderPanel();renderEstoque();renderQuadroB();renderSweepLog();renderSaldo();renderEVA();renderGuarantees();renderAlertas();renderPendencias();
+}
+
+// QUADRO B — 22 UNIDADES JÁ COMERCIALIZADAS
+function renderQuadroB(){
+  const tbody=document.getElementById('qb-tbody');
+  const tfoot=document.getElementById('qb-tfoot');
+  if(!tbody)return;
+  if(!D.compradores)D.compradores={};
+
+  let totContrato=0,totVenc=0,totAver=0,totTot=0;
+  tbody.innerHTML=SOLD_UNITS_QB.map((u,i)=>{
+    const comp=D.compradores[u.mat]||'';
+    const hasInad=u.vencido>0;
+    const hasnota=u.nota;
+    totContrato+=u.valorContrato;totVenc+=u.vencido;totAver+=u.aVencer;totTot+=u.total;
+    return`<tr style="background:${hasInad?'#FAEEDA':i%2===1?'#f8f8f8':'#fff'}">
+      <td style="font-size:11px;color:#888">${i+1}</td>
+      <td style="font-size:13px${hasnota?';font-style:italic':''}">
+        ${u.unidade}
+        ${hasnota?`<br><span style="font-size:10px;color:#854F0B">${u.nota}</span>`:''}
+      </td>
+      <td style="font-family:monospace;font-size:11px">${u.mat}</td>
+      <td style="font-size:12px">${u.dataVenda}</td>
+      <td>
+        <input type="text" value="${comp.replace(/"/g,'&quot;')}"
+          placeholder="Nome do comprador"
+          onchange="saveComprador('${u.mat}',this.value)"
+          style="width:100%;padding:4px 8px;font-size:12px;border:0.5px solid #d0d0d0;border-radius:6px;background:#f8f8f8;font-family:inherit"
+        >
+      </td>
+      <td class="nr" style="font-size:12px">${fmt(u.valorContrato)}</td>
+      <td class="nr" style="font-size:12px;font-weight:${hasInad?600:400};color:${hasInad?'#A32D2D':'#111'}">${u.vencido>0?fmt(u.vencido):'—'}</td>
+      <td class="nr" style="font-size:12px">${u.aVencer>0?fmt(u.aVencer):'—'}</td>
+      <td class="nr" style="font-size:12px;font-weight:600">${fmt(u.total)}</td>
+    </tr>`;
+  }).join('');
+
+  if(tfoot)tfoot.innerHTML=`<tr style="font-weight:700;background:#f0f0f0;border-top:1px solid #ccc">
+    <td colspan="5">Total (22 unidades)</td>
+    <td class="nr">${fmt(totContrato)}</td>
+    <td class="nr" style="color:#A32D2D">${fmt(totVenc)}</td>
+    <td class="nr">${fmt(totAver)}</td>
+    <td class="nr">${fmt(totTot)}</td>
+  </tr>`;
+}
+
+function saveComprador(mat,nome){
+  if(!D.compradores)D.compradores={};
+  D.compradores[mat]=nome.trim();
+  saveLocal();
+}
+
+// ALERTAS DINÂMICOS
+const RECEBIVEIS_BASE=4713391;
+
+function renderAlertas(){
+  const lista=document.getElementById('alertas-list');
+  if(!lista)return;
+  const alertas=[];
+  const hoje=new Date();
+  const mesAtual=monthKey(hoje);
+  const mesAtualNome=(()=>{const names=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];return`${names[hoje.getMonth()]}/${hoje.getFullYear()}`;})();
+
+  // 1. EVA ativo
+  const evaAtivo=Object.keys(D.evas).filter(k=>D.evas[k]).length>0;
+  if(evaAtivo) alertas.push({tipo:'crit',icon:'ti-alert-triangle',msg:'Evento de vencimento antecipado ativo — verificar imediatamente'});
+
+  // 2. Mês atual sem lançamento
+  const mesAtualPrefix=mesAtual+'-';
+  const temLancamentoMesAtual=D.sweepLog.some(e=>e.date.startsWith(mesAtualPrefix));
+  if(!temLancamentoMesAtual) alertas.push({tipo:'warn',icon:'ti-calendar-x',msg:`${mesAtualNome} ainda sem lançamento registrado — marque "sem movimento" se não houver entrada`});
+
+  // 3. Divergência: unidades vendidas sem sweep correspondente
+  const vendasNoSweep=new Set(D.sweepLog.filter(e=>e.tipo==='venda'&&e.uid).map(e=>e.uid));
+  const unidSemSweep=Object.keys(D.soldUnits).filter(id=>!vendasNoSweep.has(parseInt(id)));
+  if(unidSemSweep.length>0) alertas.push({tipo:'warn',icon:'ti-alert-circle',msg:`${unidSemSweep.length} unidade(s) marcada(s) como vendida(s) sem lançamento correspondente no Fluxo de Pagamento`});
+
+  // 4. Recebíveis antigos — verificar se está recebendo
+  const parcelasRecebidas=D.sweepLog.filter(e=>e.tipo==='parcela').reduce((s,e)=>s+(e.bruto||0),0);
+  const saldoRecebiv=RECEBIVEIS_BASE-parcelasRecebidas;
+  if(saldoRecebiv>RECEBIVEIS_BASE*0.9&&D.sweepLog.length>0){
+    alertas.push({tipo:'warn',icon:'ti-coins',msg:`Recebíveis de contratos antigos: R$ ${Math.round(saldoRecebiv).toLocaleString('pt-BR')} ainda pendentes — verificar inadimplência das 22 unidades`});
+  }
+
+  // 5. Relatório bimestral
+  alertas.push({tipo:'info',icon:'ti-clock',msg:'Verificar prazo do próximo relatório bimestral de recebíveis (LT → RDamásio)'});
+
+  // 6. Aval pessoal ok
+  alertas.push({tipo:'ok',icon:'ti-check',msg:'Aval pessoal constituído · operação ativa · vencimento em 15/06/2029'});
+
+  const cores={
+    crit:{bg:'#FCEBEB',color:'#501313'},
+    warn:{bg:'#FAEEDA',color:'#633806'},
+    info:{bg:'#E6F1FB',color:'#042C53'},
+    ok:{bg:'#EAF3DE',color:'#27500A'},
+  };
+
+  lista.innerHTML=alertas.map(a=>{
+    const c=cores[a.tipo];
+    return`<li style="padding:.6rem .85rem;background:${c.bg};border-radius:8px;margin-bottom:.5rem;font-size:13px;color:${c.color};font-weight:${a.tipo==='crit'?600:500}"><i class="ti ${a.icon}" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>${a.msg}</li>`;
+  }).join('');
+
+  // Manter o alert-eva para compatibilidade com renderEVA
+  let alertEvaDom=document.getElementById('alert-eva');
+  if(!alertEvaDom){
+    alertEvaDom=document.createElement('li');
+    alertEvaDom.id='alert-eva';
+    alertEvaDom.style.display='none';
+    lista.prepend(alertEvaDom);
+  }
+}
+
+function renderPanel(){
+  const amort=getTotalAmort(); // já inclui parcelas
+  const custos=getTotalCustos();
+  const saldo=getSaldo();
+  const sold=Object.keys(D.soldUnits).length;
+  const availVal=UNITS.filter(u=>!D.soldUnits[u.id]).reduce((s,u)=>s+u.val,0);
+  document.getElementById('p-saldo').textContent=fmt(saldo);
+  document.getElementById('p-amort').textContent=fmt(amort);
+  document.getElementById('p-amort-pct').textContent=Math.round(amort/P0*100)+'% do principal';
+  document.getElementById('p-custos').textContent=fmt(custos);
+  document.getElementById('p-estoque').textContent=fmt(availVal);
+  document.getElementById('p-estoque-s').textContent=(25-sold)+' unidades';
+  document.getElementById('h-saldo').textContent=fmt(saldo);
+  document.getElementById('h-sweep').textContent=fmt(amort);
+  document.getElementById('h-units').textContent=sold+' / 25';
+  document.getElementById('pp-amort').textContent=Math.round(amort/P0*100)+'%';
+  document.getElementById('pp-amort-bar').style.width=Math.min(100,amort/P0*100)+'%';
+  document.getElementById('pp-sold').textContent=sold+' / 25';
+  document.getElementById('pp-sold-bar').style.width=(sold/25*100)+'%';
+  const brutos=D.sweepLog.filter(e=>e.tipo==='venda').reduce((s,e)=>s+e.bruto,0);
+  const custoPct=brutos>0?Math.round(custos/brutos*100):0;
+  document.getElementById('pp-custo-pct').textContent=custoPct>0?custoPct+'%':'—';
+  document.getElementById('pp-custo-bar').style.width=Math.min(100,custoPct*3)+'%';
+}
+
+function renderEstoque(){
+  const sold=Object.keys(D.soldUnits).length;
+  const soldLiq=Object.values(D.soldUnits).reduce((s,v)=>s+v.liq,0);
+  const soldBruto=Object.values(D.soldUnits).reduce((s,v)=>s+v.bruto,0);
+  const soldCustos=Object.values(D.soldUnits).reduce((s,v)=>s+v.custos,0);
+  const availVal=UNITS.filter(u=>!D.soldUnits[u.id]).reduce((s,u)=>s+u.val,0);
+  document.getElementById('e-disp-v').textContent=(25-sold)+' unid.';
+  document.getElementById('e-disp-s').textContent=fmt(availVal);
+  document.getElementById('e-sold-v').textContent=sold;
+  document.getElementById('e-sold-s').textContent=fmt(soldLiq)+' amortizado';
+  document.getElementById('e-custos-tot').textContent=fmt(soldCustos);
+  const soParcelasEst=D.sweepLog.filter(e=>e.tipo==='parcela').reduce((s,e)=>s+(e.bruto||0),0);
+  const saldoRecebivEst=Math.max(0,RECEBIVEIS_BASE-soParcelasEst);
+  document.getElementById('e-receb-saldo').textContent=fmt(saldoRecebivEst);
+  document.getElementById('e-receb-recebido').textContent=fmt(soParcelasEst);
+  const sel=document.getElementById('e-sel');
+  while(sel.options.length>1)sel.remove(1);
+  UNITS.filter(u=>!D.soldUnits[u.id]).forEach(u=>{const o=document.createElement('option');o.value=u.id;o.text=`${u.local} — ${fmt(u.val)}`;sel.appendChild(o);});
+  const tbody=document.getElementById('e-tbody');
+  tbody.innerHTML='';
+  let totTab=0,totBruto=0,totCusto=0,totLiq=0;
+  UNITS.forEach(u=>{
+    const sd=D.soldUnits[u.id];
+    const tc=u.tipo==='Apartamento'?'t-apto':u.tipo==='Casa'?'t-casa':'t-com';
+    const tr=document.createElement('tr');
+    if(sd)tr.className='sold';
+    tr.innerHTML=`<td>${u.id}</td><td><span class="ttype ${tc}">${u.tipo}</span></td><td class="uname">${u.local}</td><td style="font-family:monospace;font-size:11px">${u.mat}</td><td class="nr">${fmt(u.val)}</td><td>${sd?'<span class="pill p-ok">Vendida</span>':'<span class="pill p-neutral">Disponível</span>'}</td><td style="font-size:11px;color:#888">${sd?sd.date:'—'}</td><td class="nr">${sd?fmt(sd.bruto):'—'}</td><td class="nr" style="color:#A32D2D">${sd?fmt(sd.custos):'—'}</td><td class="nr" style="color:#085041;font-weight:600">${sd?fmt(sd.liq):'—'}</td>`;
+    tbody.appendChild(tr);
+    totTab+=u.val;
+    if(sd){totBruto+=sd.bruto;totCusto+=sd.custos;totLiq+=sd.liq;}
+  });
+  document.getElementById('e-tfoot').innerHTML=`<tr class="tot"><td colspan="4">Total (25 unidades)</td><td class="nr">${fmt(totTab)}</td><td colspan="2"></td><td class="nr">${totBruto?fmt(totBruto):'—'}</td><td class="nr" style="color:#A32D2D">${totCusto?fmt(totCusto):'—'}</td><td class="nr" style="color:#085041">${totLiq?fmt(totLiq):'—'}</td></tr>`;
+}
+
+function renderSweepLog(){
+  const soParcelas=D.sweepLog.filter(e=>e.tipo==='parcela').reduce((s,e)=>s+(e.bruto||0),0);
+  const saldoRecebiv=Math.max(0,RECEBIVEIS_BASE-soParcelas);
+  document.getElementById('sw-amort').textContent=fmt(getTotalAmort());
+  document.getElementById('sw-custos').textContent=fmt(getTotalCustos());
+  document.getElementById('sw-parcelas').textContent=fmt(soParcelas);
+  const srEl=document.getElementById('sw-recebiv-saldo');
+  if(srEl)srEl.textContent=fmt(saldoRecebiv);
+  // Atualizar card header recebíveis antigos
+  const hRecebiv=document.getElementById('h-recebiv');
+  if(hRecebiv)hRecebiv.textContent=fmt(saldoRecebiv);
+
+  const log=document.getElementById('sw-log');
+  const filtered=sweepFilter==='all'
+    ?D.sweepLog.map((e,i)=>({...e,_i:i}))
+    :D.sweepLog.map((e,i)=>({...e,_i:i})).filter(e=>e.tipo===sweepFilter);
+
+  if(!filtered.length){
+    log.innerHTML='<li style="font-size:13px;color:#888;padding:.5rem 0">Nenhuma entrada ainda.</li>';
+    return;
+  }
+
+  log.innerHTML=[...filtered].reverse().map(e=>{
+    // Entrada "sem movimento" — exibição simplificada
+    if(e.tipo==='sem_movimento'){
+      return`<li class="sw-item" style="align-items:center;opacity:.7">
+        <div class="sw-dot" style="background:#bbb;margin-top:0"></div>
+        <div class="sw-body" style="flex:1">
+          <p class="sw-title" style="color:#666">${e.desc}</p>
+          <p class="sw-meta">${e.date}${e.obs?' · '+e.obs:''}</p>
+        </div>
+        <span class="pill p-neutral" style="flex-shrink:0;margin-right:.5rem">Sem movimento</span>
+        <button class="btn-del" onclick="deleteEntry(${e._i})" title="Excluir">
+          <i class="ti ti-trash" style="font-size:12px;vertical-align:-1px"></i>
+        </button>
+      </li>`;
+    }
+
+    // Custos detalhados (auto-calculados para vendas, editável em ambos)
+    const corretStr=e.corret?`<span style="font-size:10px;color:#aaa;margin-left:4px">corretagem ${fmt(e.corret)}</span>`:'';
+    const itbiStr=e.itbi?`<span style="font-size:10px;color:#aaa;margin-left:4px">ITBI ${fmt(e.itbi)}</span>`:'';
+    const irStr=e.ir?`<span style="font-size:10px;color:#aaa;margin-left:4px">IR ${fmt(e.ir)}</span>`:'';
+    const custosHint=e.tipo==='venda'?`<span style="font-size:10px;color:#bbb;margin-left:6px">(auto-calculado — edite para ajustar)${corretStr}${itbiStr}${irStr}</span>`
+      :`<span style="font-size:10px;color:#bbb;margin-left:6px">(preencha corretagem, ITBI, IR e outros se houver)</span>`;
+
+    const ledger=`<div class="sw-ledger">
+      <div class="sw-l-row entrada">
+        <span class="sw-l-key">${e.tipo==='venda'?'Bruto recebido':'Entrada na Conta Centralizadora'}</span>
+        <span class="sw-l-val">${fmt(e.bruto)}</span>
+      </div>
+      ${e.inad?`<div class="sw-l-row inad"><span class="sw-l-key">⚠ Inadimplência registrada no período</span><span class="sw-l-val">${fmt(e.inad)}</span></div>`:''}
+      <div class="sw-l-row custo" style="align-items:center">
+        <span class="sw-l-key" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+          (−) Custos totais${custosHint}
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span style="color:#A32D2D;font-size:11px;font-family:monospace">−</span>
+          <input
+            type="number"
+            value="${e.custos||0}"
+            min="0"
+            step="100"
+            onchange="updateEntryCost(${e._i},this.value)"
+            style="width:120px;padding:3px 7px;font-size:12px;text-align:right;font-family:monospace;border:0.5px solid #fcc;border-radius:6px;background:#fff8f8;color:#A32D2D;font-weight:500"
+            title="Edite o valor dos custos diretamente aqui"
+          >
+        </span>
+      </div>
+      <div class="sw-l-row total">
+        <span class="sw-l-key">→ Amortização 051 Capital</span>
+        <span class="sw-l-val" id="amort-val-${e._i}">${fmt(e.amort)}</span>
+      </div>
+    </div>`;
+
+    return`<li class="sw-item" style="align-items:flex-start">
+      <div class="sw-dot${e.tipo==='venda'?'':e.tipo==='sem_movimento'?' ':'  a'}" style="margin-top:6px;background:${e.tipo==='sem_movimento'?'#bbb':e.tipo==='venda'?'#1D9E75':'#EF9F27'}"></div>
+      <div class="sw-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;flex-wrap:wrap;margin-bottom:3px">
+          <div>
+            <p class="sw-title">${e.desc}</p>
+            <p class="sw-meta">${e.date}${D.attachments&&D.attachments[e._i]?` · <span style="color:#085041;font-size:10px"><i class="ti ti-paperclip" style="font-size:11px;vertical-align:-1px"></i> ${D.attachments[e._i].nome}</span>`:''}</p>
+          </div>
+          <div style="display:flex;gap:.4rem;flex-shrink:0;align-items:flex-start;flex-wrap:wrap">
+            <label style="padding:4px 9px;border:0.5px solid #c0d4f0;border-radius:6px;font-size:11px;cursor:pointer;background:#fff;color:#185FA5;font-family:inherit;transition:all .15s" title="Anexar comprovante de pagamento">
+              <i class="ti ti-paperclip" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>${D.attachments&&D.attachments[e._i]?'Substituir':'Comprovante'}
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="uploadComprovante(${e._i},this)">
+            </label>
+            <button class="btn-del" onclick="deleteEntry(${e._i})" title="Excluir lançamento">
+              <i class="ti ti-trash" style="font-size:12px;vertical-align:-1px"></i> Excluir
+            </button>
+          </div>
+        </div>
+        ${ledger}
+      </div>
+    </li>`;
+  }).join('');
+}
+
+function renderSaldo(){
+  renderIPCAList();
+  const ipca=parseFloat(document.getElementById('sd-ipca').value);
+  document.getElementById('sd-ipca-v').textContent=fmtP(ipca);
+  document.getElementById('sd-total-v').textContent=fmtP(ipca+12.5);
+  const rate=(ipca/100+0.125); // usado só na projeção futura (cenário), abaixo
+  const sweep=getTotalAmort();
+
+  // ── Evolução real do saldo devedor (Cláusulas 5.1/5.3/5.4/6.1(i) — IPCA mensal
+  // efetivamente publicado pelo IBGE, não uma taxa anual simulada) ──────────────
+  const hoje=new Date();
+  const diasCorr=contarDC(EMISSAO,hoje);
+  const evo=computeEvolucao(hoje);
+  const jurosHoje=evo.totalJuros;
+  const saldoHoje=evo.saldoFinal;
+  const dailyRateEquiv=Math.pow(1+jurosHoje/P0,1/Math.max(1,diasCorr))-1; // taxa diária equivalente ao retorno acumulado, só para exibição
+  const elHoje=document.getElementById('sd-hoje');
+  const elJuros=document.getElementById('sd-juros-hoje');
+  const elDias=document.getElementById('sd-dias');
+  const elTaxa=document.getElementById('sd-taxa-dia');
+  const elDetail=document.getElementById('sd-hoje-detail');
+  const elJurosDetail=document.getElementById('sd-juros-hoje-detail');
+  if(elHoje)elHoje.textContent=fmt(saldoHoje);
+  if(elJuros)elJuros.textContent=fmt(jurosHoje);
+  if(elDias)elDias.textContent=diasCorr+' dias';
+  if(elTaxa)elTaxa.textContent=(dailyRateEquiv*100).toFixed(5).replace('.',',')+' % a.d.';
+  if(elDetail)elDetail.textContent=`R$ 12.000.000 + IPCA mensal (IBGE) + 12,5% a.a. sobre saldo atualizado (Cláusulas 5.1/5.3/5.4) − ${fmt(sweep)} amortizado`;
+  if(elJurosDetail)elJurosDetail.textContent=`Desde 15/06/2026 até ${hoje.toLocaleDateString('pt-BR')} · cálculo diário`;
+  const elBig=document.getElementById('sd-big');
+  const elChip=document.getElementById('sd-sweep-chip');
+  if(elBig)elBig.textContent=fmt(saldoHoje);
+  if(elChip)elChip.textContent='Atualizado em: '+hoje.toLocaleDateString('pt-BR');
+
+  // ── Tabela de histórico de saldo devedor por competência ──────────────
+  const monthLabel=m=>{
+    const[y,mo]=m.split('-');
+    const names=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    return`${names[parseInt(mo)-1]}/${y}`;
+  };
+  const mesAtual=monthKey(hoje);
+  const fimMesAtual=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
+  // Linha extra: projeção hipotética se o mês corrente fechasse hoje na taxa/IPCA atual
+  // (mesmo saldo/amortizações reais, só estendendo os dias até o fim do mês) — não soma
+  // no total acumulado, é só uma referência de "para onde o saldo caminha"
+  const temProjecao=contarDC(hoje,fimMesAtual)>0;
+  const rowProjecao=temProjecao?computeEvolucao(fimMesAtual).rows.find(r=>r.mes===mesAtual):null;
+  const tbody=document.getElementById('sd-hist-tbody');
+  if(tbody){
+    tbody.innerHTML=evo.rows.map(r=>{
+      const hasSemMov=D.sweepLog.some(e=>e.tipo==='sem_movimento'&&e.date.startsWith(r.mes+'-'));
+      const hasMov=r.amort>0;
+      const isCurrentMonth=r.mes===mesAtual;
+      const statusEl=hasSemMov
+        ?`<span class="pill p-neutral" style="font-size:10px">Sem movimento</span>`
+        :hasMov
+          ?`<span class="pill p-ok" style="font-size:10px">Recebido</span>`
+          :isCurrentMonth
+            ?`<span class="pill p-warn" style="font-size:10px">Em aberto</span>`
+            :`<span class="pill p-neutral" style="font-size:10px">—</span>`;
+      return`<tr>
+        <td style="font-weight:500">${monthLabel(r.mes)}${isCurrentMonth?' <span style="font-size:10px;color:#888">(até hoje)</span>':''}</td>
+        <td class="nr">${fmt(r.saldoInicial)}</td>
+        <td class="nr" style="color:#854F0B">${fmt(r.juros)}</td>
+        <td class="nr" style="color:${r.amort>0?'#085041':'#aaa'}">${r.amort>0?fmt(r.amort):'—'}</td>
+        <td class="nr" style="font-weight:600;color:${r.saldoFinal<P0*0.5?'#085041':'#111'}">${fmt(r.saldoFinal)}</td>
+        <td>${statusEl}</td>
+      </tr>`;
+    }).join('');
+  }
+  const projCard=document.getElementById('sd-proj-mes-card');
+  const projTbody=document.getElementById('sd-proj-mes-tbody');
+  if(projCard&&projTbody){
+    if(rowProjecao){
+      projCard.style.display='';
+      projTbody.innerHTML=`<tr>
+        <td style="font-weight:500">${monthLabel(rowProjecao.mes)}</td>
+        <td class="nr">${fmt(rowProjecao.saldoInicial)}</td>
+        <td class="nr" style="color:#854F0B">${fmt(rowProjecao.juros)}</td>
+        <td class="nr">${rowProjecao.amort>0?fmt(rowProjecao.amort):'—'}</td>
+        <td class="nr" style="font-weight:600">${fmt(rowProjecao.saldoFinal)}</td>
+      </tr>`;
+    }else{
+      projCard.style.display='none';
+      projTbody.innerHTML='';
+    }
+  }
+
+  // ── Tabela dia a dia ──────────────────────────────────────
+  const diaTbody=document.getElementById('sd-hist-dia-tbody');
+  if(diaTbody){
+    const diasRows=computeEvolucaoDiaria(hoje);
+    diaTbody.innerHTML=diasRows.map(r=>{
+      const isHoje=toISODate(r.data)===toISODate(hoje);
+      return`<tr${isHoje?' style="background:#F0FAF6;font-weight:600"':''}>
+        <td>${r.data.toLocaleDateString('pt-BR')}${isHoje?' <span style="font-size:10px;color:#085041">(hoje)</span>':''}</td>
+        <td class="nr">${fmt(r.saldoInicial)}</td>
+        <td class="nr" style="color:#854F0B">${fmt(r.juros)}</td>
+        <td class="nr" style="color:#EF9F27;font-weight:600">${fmt(r.jurosAcumuladoMes)}</td>
+        <td class="nr" style="color:#854F0B;font-weight:600">${fmt(r.jurosAcumulado)}</td>
+        <td class="nr" style="color:${r.amort>0?'#085041':'#aaa'}">${r.amort>0?fmt(r.amort):'—'}</td>
+        <td class="nr">${fmt(r.saldoFinal)}</td>
+      </tr>`;
+    }).join('');
+  }
+  const tfoot=document.getElementById('sd-hist-tfoot');
+  if(tfoot){
+    tfoot.innerHTML=`<tr class="tot">
+      <td>Total acumulado</td>
+      <td></td>
+      <td class="nr" style="color:#854F0B">${fmt(evo.totalJuros)}</td>
+      <td class="nr" style="color:#085041">${fmt(evo.totalAmort)}</td>
+      <td class="nr" style="font-weight:700">${fmt(evo.saldoFinal)}</td>
+      <td></td>
+    </tr>`;
+  }
+
+  // ── Projeção simplificada ──────────────────────────────────────
+  const startProj=new Date(2026,5,15);
+  document.getElementById('sd-proj').innerHTML=[
+    {nome:'Otimista',ritmo:'3 unid./mês',meses:9},
+    {nome:'Moderado',ritmo:'2 unid./mês',meses:14},
+    {nome:'Conservador',ritmo:'1 unid./mês',meses:26},
+  ].map(c=>{
+    const d=new Date(startProj);d.setMonth(d.getMonth()+c.meses);
+    const jEst=P0*(Math.pow(1+rate,c.meses/12)-1);
+    return`<tr><td><strong>${c.nome}</strong></td><td style="font-size:12px;color:#666">${c.ritmo}</td><td class="nr">${d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})}</td><td class="nr" style="color:#854F0B">${fmt(jEst)}</td></tr>`;
+  }).join('');
+}
+
+function renderEVA(){
+  const triggered=Object.keys(D.evas).filter(k=>D.evas[k]).length;
+  const evaDateEl=document.getElementById('eva-date');
+  if(D.evaDate&&evaDateEl)evaDateEl.value=D.evaDate;
+  const evaListEl=document.getElementById('eva-list');
+  if(evaListEl)evaListEl.innerHTML=EVAS.map(e=>{
+    const on=!!D.evas[e.id];
+    return`<div class="eva-item${on?' triggered':''}"><div class="eva-head"><input type="checkbox" class="eva-cb"${on?' checked':''} onchange="toggleEVA('${e.id}',this.checked)"><div><p class="eva-title">${e.title}</p><p class="eva-sub">${e.sub}</p></div>${on?'<span class="pill p-danger" style="margin-left:auto;flex-shrink:0">Ativo</span>':''}</div></div>`;
+  }).join('');
+  const acc=document.getElementById('accel-section');
+  const alertEva=document.getElementById('alert-eva');
+  if(triggered>0){
+    if(acc)acc.style.display='block';
+    if(alertEva)alertEva.style.display='block';
+    calcAccel();
+  }else{
+    if(acc)acc.style.display='none';
+    if(alertEva)alertEva.style.display='none';
+  }
+}
+
+function toggleEVA(id,checked){
+  D.evas[id]=checked;
+  D.evaDate=document.getElementById('eva-date').value;
+  saveLocal();renderEVA();
+}
+
+function saveEVADate(){
+  D.evaDate=document.getElementById('eva-date').value;
+  saveLocal();
+  if(Object.keys(D.evas).filter(k=>D.evas[k]).length>0)calcAccel();
+}
+
+function calcAccel(){
+  const hoje=new Date();
+  const evaDateStr=D.evaDate||'';
+  const evaDate=evaDateStr?new Date(evaDateStr+'T00:00:00'):hoje;
+  // Saldo devedor na data do Vencimento Antecipado — base da multa e da mora (Cláusula 13.1.3:
+  // encargos incidem sobre "a integralidade do saldo devedor declarado vencido")
+  const saldoNaData=computeEvolucao(evaDate).saldoFinal;
+  // Juros Remuneratórios + Atualização Monetária continuam correndo após a aceleração
+  // (Cláusula 13.1.1(i)) — saldo devedor hoje é a base dos honorários (Cláusula 14.3:
+  // "10% sobre o saldo devedor... em cobrança")
+  const saldoHoje=computeEvolucao(hoje).saldoFinal;
+  const multa=saldoNaData*0.10; // Cláusula 13.1(i) — multa não compensatória de 10%
+  const diasMora=contarDC(evaDate,hoje);
+  const mora=saldoNaData*0.01*(diasMora/30); // Cláusula 13.1(ii) — 1% a.m. pro rata die
+  const honor=saldoHoje*0.10; // Cláusula 14.3
+  const cobr=D.params.cobr>0?(saldoHoje*D.params.cobr/100):0;
+  const total=saldoHoje+multa+mora+honor+cobr;
+  document.getElementById('accel-num').textContent=fmt(total);
+  document.getElementById('accel-chips').innerHTML=[
+    `Saldo devedor hoje: ${fmt(saldoHoje)}`,
+    `Multa 10% (sobre saldo em ${evaDate.toLocaleDateString('pt-BR')}): ${fmt(multa)}`,
+    `Mora 1% a.m. · ${diasMora} dias: ${fmt(mora)}`,
+    `Honorários 10%: ${fmt(honor)}`,
+    cobr>0?`Custo cobrança: ${fmt(cobr)}`:'Custo cobrança: a definir',
+  ].map(t=>`<span class="accel-chip">${t}</span>`).join('');
+}
+
+// Dados dos checklists de garantia (centralizados aqui para facilitar manutenção)
+const GARANT_ITEMS={
+  g1:[
+    {k:'g1a',txt:'Instrumento de AF assinado (15/06/2026)'},
+    {k:'g1b',txt:'Cancelamento AF CRI Vistamar 47ª — R-6 Mat. 5.507 e Av-2 das filhas'},
+    {k:'g1c',txt:'Registro AF RDamásio em 1° grau — Matrícula-mãe 5.507'},
+    {k:'g1d',txt:'Averbação nas matrículas filhas (todas as unidades)'},
+    {k:'g1e',txt:'Certidão confirmando 1° grau para RDamásio (sem outros ônus)'},
+  ],
+  g2:[
+    {k:'g2a',txt:'Instrumento de CF assinado (15/06/2026)'},
+    {k:'g2b',txt:'Cancelamento CF CRI Vistamar 47ª'},
+    {k:'g2c',txt:'Conta Centralizadora aberta (≤ 5 DU da assinatura)'},
+    {k:'g2d',txt:'Compradores antigos notificados para pagar na nova conta (≤ 10 DU)'},
+    {k:'g2e',txt:'Contratos aditados — referência Canal → nova Conta Centralizadora'},
+    {k:'g2f',txt:'1° relatório bimestral de recebíveis recebido'},
+  ],
+  g3:[
+    {k:'g3a',txt:'Instrumento de AF de Quotas assinado (15/06/2026)'},
+    {k:'g3b',txt:'Cancelamento AF de Quotas do CRI na JUCEPI'},
+    {k:'g3c',txt:'Registro AF de Quotas RDamásio na JUCEPI'},
+    {k:'g3d',txt:'Certidão JUCEPI confirmando registro em favor da RDamásio'},
+  ],
+  g4:[
+    {k:'g4a',txt:'Relatório de aplicação dos recursos (≤ 10 DU da liberação)'},
+    {k:'g4b',txt:'Cancelamento AF Quotas do CRI na JUCEPI (≤ 30 DU)'},
+    {k:'g4c',txt:'ITU/IPTU regularizados — unidades em estoque (≤ 90 dias)'},
+    {k:'g4d',txt:'Anuência prévia da RDamásio para distrato, desconto ou renegociação'},
+    {k:'g4e',txt:'Tabela Oficial de Vendas enviada à RDamásio sempre que atualizada'},
+  ],
+};
+
+function renderGuarantees(){
+  if(!D.guarantees)D.guarantees={};
+  // Gera HTML dinâmico com o atributo `checked` embutido — garante estado correto sempre
+  const li=(item)=>{
+    const checked=!!D.guarantees[item.k];
+    return`<li>
+      <input type="checkbox" data-g="${item.k}" onchange="saveGuarantee(this.dataset.g,this.checked)" ${checked?'checked':''}>
+      <label class="lbl${checked?' done':''}">${item.txt}</label>
+    </li>`;
+  };
+  ['g1','g2','g3','g4'].forEach(grp=>{
+    const el=document.getElementById(grp+'-list');
+    if(el)el.innerHTML=GARANT_ITEMS[grp].map(li).join('');
+  });
+}
+
+// Garantias — salvar via inline onchange (mais robusto que addEventListener)
+function saveGuarantee(key, val){
+  if(!D.guarantees)D.guarantees={};
+  D.guarantees[key]=val;
+  // Atualizar label tachado
+  const cb=document.querySelector(`[data-g="${key}"]`);
+  if(cb&&cb.nextElementSibling)cb.nextElementSibling.classList.toggle('done',val);
+  saveLocal();
+  // Atualizar painel de pendências em tempo real
+  const pdReg=document.getElementById('pd-reg');
+  if(pdReg){
+    const total=20;
+    const feitos=Object.values(D.guarantees).filter(Boolean).length;
+    pdReg.textContent=(total-feitos)+' itens';
+  }
+}
+
+document.getElementById('sd-ipca').addEventListener('input',()=>{
+  renderSaldo();
+  if(Object.keys(D.evas).filter(k=>D.evas[k]).length>0)calcAccel();
+});
+
+document.getElementById('e-bruto-inp').addEventListener('input',()=>{
+  const bruto=parseFloat(document.getElementById('e-bruto-inp').value)||0;
+  const outros=parseFloat(document.getElementById('e-outros').value)||0;
+  if(!bruto){document.getElementById('e-preview').style.display='none';return;}
+  const{corret,itbi,ir,liq}=calcCosts(bruto);
+  const liqFinal=liq-outros;
+  document.getElementById('e-preview').style.display='block';
+  document.getElementById('e-prev-corret').textContent=`Corretagem (${D.params.corret}%): ${fmt(corret)}`;
+  document.getElementById('e-prev-itbi').textContent=`ITBI (${D.params.itbi}%): ${fmt(itbi)}`;
+  document.getElementById('e-prev-ir').textContent=`IR (${D.params.ir}%): ${fmt(ir)}`;
+  document.getElementById('e-prev-liq').textContent=`→ Amortização 051: ${fmt(liqFinal)}`;
+});
+
+function wireRecebivelPreview(prefix){
+  const update=()=>{
+    const val=parseFloat(document.getElementById(prefix+'-val').value)||0;
+    const corret=parseFloat(document.getElementById(prefix+'-corret').value)||0;
+    const itbi=parseFloat(document.getElementById(prefix+'-itbi').value)||0;
+    const ir=parseFloat(document.getElementById(prefix+'-ir').value)||0;
+    const outros=parseFloat(document.getElementById(prefix+'-outros').value)||0;
+    const prevEl=document.getElementById(prefix+'-preview');
+    if(!val){prevEl.style.display='none';return;}
+    const liq=Math.max(0,val-(corret+itbi+ir+outros));
+    prevEl.style.display='block';
+    document.getElementById(prefix+'-prev-liq').textContent=fmt(liq);
+  };
+  [prefix+'-val',prefix+'-corret',prefix+'-itbi',prefix+'-ir',prefix+'-outros'].forEach(id=>{
+    document.getElementById(id).addEventListener('input',update);
+  });
+}
+wireRecebivelPreview('e2');
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById(t.dataset.s).classList.add('on');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// EXPORTAR / IMPORTAR DADOS
+// ══════════════════════════════════════════════════════════
+function exportarDados(){
+  try{
+    const json=JSON.stringify(D,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    const hoje=new Date().toISOString().slice(0,10);
+    a.download=`vistamar_dados_${hoje}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }catch(e){alert('Erro ao exportar: '+e.message);}
+}
+
+function importarDados(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(!confirm(`Importar dados de "${file.name}"?\nIsso vai SUBSTITUIR todos os dados atuais no sistema.`))return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    // 1. Validar e parsear o JSON
+    let parsed;
+    try{
+      parsed=JSON.parse(ev.target.result);
+      if(typeof parsed!=='object'||parsed===null)throw new Error('Formato inválido');
+    }catch(e){
+      alert('Arquivo inválido ou corrompido: '+e.message);
+      return;
+    }
+    // 2. Aplicar os dados
+    D={...D,...parsed};
+    if(!D.compradores)D.compradores={};
+    if(!D.attachments)D.attachments={};
+    if(!D.notificacoes)D.notificacoes={};
+    if(!D.contratos)D.contratos={};
+    // 3. Salvar e renderizar separadamente (erros de render não invalidam o import)
+    try{saveLocal();}catch(e){console.warn('saveLocal após import:',e);}
+    try{renderAll();}catch(e){console.warn('renderAll após import:',e);}
+
+    // Resumo do que foi importado
+    const garantCount=Object.values(D.guarantees||{}).filter(Boolean).length;
+    const sweepCount=(D.sweepLog||[]).length;
+    const soldCount=Object.keys(D.soldUnits||{}).length;
+    const notifCount=Object.values(D.notificacoes||{}).filter(Boolean).length;
+    alert(
+      `Importação concluída!\n\n` +
+      `✓ Garantias marcadas: ${garantCount} de 20\n` +
+      `✓ Lançamentos no fluxo: ${sweepCount}\n` +
+      `✓ Unidades vendidas: ${soldCount}\n` +
+      `✓ Notificações marcadas: ${notifCount}\n\n` +
+      (garantCount===0 ? `⚠ Nenhuma garantia foi restaurada.\nIsso indica que o arquivo JSON foi exportado antes de as garantias estarem sendo salvas corretamente.\nMarque os itens novamente na aba Garantias e exporte um novo JSON.` : ``)
+    );
+  };
+  reader.readAsText(file);
+}
+
+function verificarStorage(){
+  try{
+    const json=localStorage.getItem(KEY)||'';
+    const bytes=new Blob([json]).size;
+    const kb=Math.round(bytes/1024);
+    const pct=Math.round(bytes/(5*1024*1024)*100);
+    const infoEl=document.getElementById('storage-info');
+    if(infoEl){
+      infoEl.style.display='block';
+      infoEl.innerHTML=`<strong>Espaço usado:</strong> ${kb} KB de ~5.000 KB (${pct}%) &nbsp;·&nbsp; ${pct>80?'<span style="color:#A32D2D">⚠ Próximo do limite — exporte seus dados!</span>':pct>50?'<span style="color:#854F0B">Atenção — use com cuidado</span>':'<span style="color:#085041">OK — espaço suficiente</span>'}`;
+    }
+  }catch(e){console.error(e);}
+}
+// ══════════════════════════════════════════════════════════
+// Entrada manual de IPCA por competência — usada como alternativa quando o fetch ao
+// IBGE falha (bloqueio de rede, arquivo aberto localmente etc.). Grava no mesmo
+// D.ipcaMensal usado pelo fetch automático, então getIPCARef() trata os dois igual.
+function saveIPCAManual(){
+  const mesEl=document.getElementById('ipca-man-mes');
+  const valEl=document.getElementById('ipca-man-val');
+  const mes=mesEl.value; // "YYYY-MM"
+  const val=parseFloat(valEl.value);
+  if(!mes||isNaN(val)){alert('Informe a competência e o valor do IPCA.');return;}
+  D.ipcaMensal[mes]=val;
+  saveLocal();
+  mesEl.value='';valEl.value='';
+  renderAll();
+}
+
+function deleteIPCAManual(mes){
+  delete D.ipcaMensal[mes];
+  saveLocal();
+  renderAll();
+}
+
+function renderIPCAList(){
+  const el=document.getElementById('ipca-man-list');
+  if(!el)return;
+  const entries=Object.entries(D.ipcaMensal||{}).sort((a,b)=>a[0]<b[0]?1:-1);
+  if(entries.length===0){el.innerHTML='<span style="color:#aaa">Nenhuma competência registrada ainda.</span>';return;}
+  const names=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:6px">'+entries.map(([mes,val])=>{
+    const[y,m]=mes.split('-');
+    return`<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:#f0f0f0;border-radius:6px;font-family:monospace">${names[parseInt(m)-1]}/${y}: ${val.toFixed(2).replace('.',',')}% <i class="ti ti-x" style="cursor:pointer;color:#A32D2D;font-size:11px" onclick="deleteIPCAManual('${mes}')" title="Remover"></i></span>`;
+  }).join('')+'</div>';
+}
+
+async function fetchIPCA(){
+  const infoEl=document.getElementById('ipca-info');
+  const btnPdf=document.getElementById('btn-rel-pdf');
+  const btnXls=document.getElementById('btn-rel-excel');
+  const hintEl=document.getElementById('rel-data-fim-hint');
+  // Trava os botões de relatório durante a busca — evita gerar o PDF com um
+  // índice de IPCA e o Excel com outro (a causa mais comum de divergência entre eles)
+  if(btnPdf){btnPdf.disabled=true;btnPdf.style.opacity='.5';btnPdf.style.cursor='not-allowed';}
+  if(btnXls){btnXls.disabled=true;btnXls.style.opacity='.5';btnXls.style.cursor='not-allowed';}
+  if(hintEl)hintEl.textContent='Atualizando índice de IPCA — aguarde para gerar o relatório...';
+  if(infoEl)infoEl.textContent='Buscando IPCA no IBGE…';
+  try{
+    // Da emissão até o mês atual (+1 de folga), para cobrir toda a vida do contrato
+    const hoje=new Date();
+    const mesesDesdeEmissao=(hoje.getFullYear()-EMISSAO.getFullYear())*12+(hoje.getMonth()-EMISSAO.getMonth())+1;
+    const totalMeses=Math.min(60,Math.max(13,mesesDesdeEmissao+1));
+    const periodos=[];
+    for(let i=totalMeses-1;i>=0;i--){
+      const d=new Date(hoje.getFullYear(),hoje.getMonth()-i,1);
+      periodos.push(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}`);
+    }
+    const url=`https://servicodados.ibge.gov.br/api/v3/agregados/7060/periodos/${periodos.join('|')}/variaveis/63?localidades=N1[all]`;
+    const resp=await fetch(url);
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    const serie=data[0].resultados[0].series[0].serie;
+
+    // Guarda a série mensal REAL (para apurar o saldo devedor efetivo — Anexo I)
+    // e acumula os últimos 12 meses válidos (para o cenário/projeção futura)
+    let acum=1, count=0, ultimoMes='', ultimoVal=0;
+    Object.entries(serie).forEach(([p,raw])=>{
+      const v=parseFloat(raw);
+      if(!isNaN(v)){
+        const key=`${p.slice(0,4)}-${p.slice(4,6)}`;
+        D.ipcaMensal[key]=v;
+      }
+    });
+    for(const p of periodos.slice(-13)){
+      const v=parseFloat(serie[p]);
+      if(!isNaN(v)&&v!==0){
+        acum*=(1+v/100);
+        count++;
+        ultimoMes=p;
+        ultimoVal=v;
+      }
+    }
+    if(count===0)throw new Error('Sem dados');
+    D.ipcaAtualizadoEm=new Date().toISOString();
+    saveLocal();
+
+    // Anualizar (composto) — só para a taxa de CENÁRIO usada em projeções futuras
+    const ipcaAnual=(Math.pow(acum,12/count)-1)*100;
+    const clamped=Math.min(10,Math.max(3,Math.round(ipcaAnual*2)/2));
+
+    const slider=document.getElementById('sd-ipca');
+    if(slider){
+      slider.value=clamped;
+    }
+    renderAll();
+
+    const mesNome=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    const mesLabel=p=>{const y=p.slice(0,4),m=parseInt(p.slice(4,6))-1;return`${mesNome[m]}/${y}`;};
+    if(infoEl){
+      infoEl.innerHTML=`<span style="color:#085041;font-weight:500"><i class="ti ti-circle-check" style="font-size:12px;vertical-align:-2px;margin-right:3px"></i>IBGE · IPCA mensal carregado (${Object.keys(D.ipcaMensal).length} competências) · Última variação: ${ultimoVal.toFixed(2).replace('.',',')}% em ${mesLabel(ultimoMes)} · Atualizado ${new Date().toLocaleDateString('pt-BR')}</span>`;
+    }
+  }catch(e){
+    if(infoEl){
+      infoEl.innerHTML=`<span style="color:#854F0B"><i class="ti ti-alert-circle" style="font-size:12px;vertical-align:-2px;margin-right:3px"></i>Não foi possível carregar o IPCA do IBGE (${e.message}) — comum quando o arquivo é aberto localmente (file://) ou há bloqueio de rede. Use o campo abaixo para informar o IPCA manualmente, ou hospede o arquivo em um servidor/URL para o fetch funcionar.</span>`;
+    }
+  }finally{
+    if(btnPdf){btnPdf.disabled=false;btnPdf.style.opacity='';btnPdf.style.cursor='';}
+    if(btnXls){btnXls.disabled=false;btnXls.style.opacity='';btnXls.style.cursor='';}
+    if(hintEl)hintEl.textContent='Início fixo em 15/06/2026 (data de emissão). Selecione até quando o relatório em PDF e a planilha Excel devem considerar — se não escolher nada, considera até hoje.';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RELATÓRIO DE ACOMPANHAMENTO MENSAL — FUNÇÃO UNIFICADA
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// EXPORTAÇÃO EXCEL (.xlsx) — resumo, competência e dia a dia
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// EXPORTAÇÃO EXCEL — gera um Excel nativo (SpreadsheetML) com
+// FÓRMULAS VIVAS (recalculam se você editar um valor) e o layout
+// nas cores da 051 Capital. Não depende de biblioteca externa.
+// Paleta: navy #121628 · verde-limão #93C352 · verde-escuro #145A32 · off-white #F4F7F8
+// ══════════════════════════════════════════════════════════
+function excelColLetter(n){let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}return s;}
+function excelEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function R1C1(row,col){return`R${row}C${col}`;} // referência absoluta — formato exigido pelo ss:Formula deste XML
+function xlText(val,styleId){return`<Cell${styleId?` ss:StyleID="${styleId}"`:''}><Data ss:Type="String">${excelEsc(val)}</Data></Cell>`;}
+function xlNum(val,styleId){return`<Cell${styleId?` ss:StyleID="${styleId}"`:''}><Data ss:Type="Number">${Number.isFinite(val)?val:0}</Data></Cell>`;}
+function xlFormula(formula,cachedVal,styleId){return`<Cell${styleId?` ss:StyleID="${styleId}"`:''} ss:Formula="${excelEsc(formula)}"><Data ss:Type="Number">${Number.isFinite(cachedVal)?cachedVal:0}</Data></Cell>`;}
+function xlFormulaDate(formula,cachedDateObj,styleId){return`<Cell${styleId?` ss:StyleID="${styleId}"`:''} ss:Formula="${excelEsc(formula)}"><Data ss:Type="DateTime">${cachedDateObj.toISOString().slice(0,19)}</Data></Cell>`;}
+function xlDate(dateObj,styleId){return`<Cell${styleId?` ss:StyleID="${styleId}"`:''}><Data ss:Type="DateTime">${dateObj.toISOString().slice(0,19)}</Data></Cell>`;}
+function xlRow(cells,height){return`<Row${height?` ss:AutoFitHeight="0" ss:Height="${height}"`:''}>${cells.join('')}</Row>`;}
+function xlMergedTitle(text,span,styleId){return`<Row><Cell ss:StyleID="${styleId}" ss:MergeAcross="${span-1}"><Data ss:Type="String">${excelEsc(text)}</Data></Cell></Row>`;}
+
+function exportarExcelSaldo(){
+  const hoje=new Date();
+  const dataCorte=getRelatorioDataCorte();
+  const evo=computeEvolucao(dataCorte);
+  const dias=computeEvolucaoDiaria(dataCorte);
+  const names=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const ml=m=>{const[y,mo]=m.split('-');return`${names[parseInt(mo)-1]}/${y}`;};
+
+  const STYLES=`
+  <Style ss:ID="sTitle"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="14"/><Interior ss:Color="#121628" ss:Pattern="Solid"/><Alignment ss:Vertical="Center" ss:Horizontal="Left" ss:Indent="1"/></Style>
+  <Style ss:ID="sSubtitle"><Font ss:Italic="1" ss:Color="#555555" ss:Size="9"/><Alignment ss:WrapText="1" ss:Vertical="Center"/></Style>
+  <Style ss:ID="sHeader"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10"/><Interior ss:Color="#121628" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#93C352"/></Borders></Style>
+  <Style ss:ID="sLabel"><Font ss:Bold="1" ss:Color="#145A32" ss:Size="10"/></Style>
+  <Style ss:ID="sRowEven"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0.00"/></Style>
+  <Style ss:ID="sRowOdd"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0.00"/></Style>
+  <Style ss:ID="sRowEvenTxt"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sRowOddTxt"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sRowEvenPct"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/><NumberFormat ss:Format="0.0000%"/></Style>
+  <Style ss:ID="sRowOddPct"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><NumberFormat ss:Format="0.0000%"/></Style>
+  <Style ss:ID="sRowEvenInt"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/><NumberFormat ss:Format="0"/></Style>
+  <Style ss:ID="sRowOddInt"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><NumberFormat ss:Format="0"/></Style>
+  <Style ss:ID="sRowEvenDate"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/><NumberFormat ss:Format="dd/mm/yyyy"/></Style>
+  <Style ss:ID="sRowOddDate"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><NumberFormat ss:Format="dd/mm/yyyy"/></Style>
+  <Style ss:ID="sTotal"><Font ss:Bold="1" ss:Color="#121628" ss:Size="10"/><Interior ss:Color="#93C352" ss:Pattern="Solid"/><NumberFormat ss:Format="#,##0.00"/></Style>
+  <Style ss:ID="sTotalTxt"><Font ss:Bold="1" ss:Color="#121628" ss:Size="10"/><Interior ss:Color="#93C352" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sPremValLbl"><Font ss:Bold="1" ss:Color="#145A32"/><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sPremVal"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/><NumberFormat ss:Format="0.0000%"/></Style>
+  <Style ss:ID="sPremValInt"><Interior ss:Color="#F4F7F8" ss:Pattern="Solid"/><NumberFormat ss:Format="0"/></Style>
+  <Style ss:ID="sCurrency"><NumberFormat ss:Format="R$ #,##0.00"/></Style>`;
+
+  const zebra=(j,tipo)=>{ // tipo: 'num'|'txt'|'pct'|'int'|'date'
+    const map={num:['sRowOdd','sRowEven'],txt:['sRowOddTxt','sRowEvenTxt'],pct:['sRowOddPct','sRowEvenPct'],int:['sRowOddInt','sRowEvenInt'],date:['sRowOddDate','sRowEvenDate']};
+    return map[tipo][j%2];
+  };
+
+  // ── Aba "Memória de Cálculo" — uma linha por competência (mês), no modelo que
+  // você pediu de volta. Os valores de Saldo final/Juros/Amortizado continuam
+  // vindo do motor correto por Data de Pagamento (Anexo I) — só a EXIBIÇÃO voltou
+  // a ser mensal. "Saldo antes da amortização" é calculado de trás pra frente
+  // (Saldo final + Amortizado) nos meses em que houve recebimento NO MEIO do mês,
+  // porque nesses casos ele já reflete o benefício de a amortização ter sido
+  // aplicada naquela data (menos juros no restante do mês) — por isso pode não
+  // bater exatamente com VNa × Fator Juros do mês inteiro (que é só uma
+  // referência de "quanto renderia sem nenhuma amortização").
+  const memColCount=17;
+  const memPremissasRow=3;
+  const memHeaderRow=5;
+  const memFirstDataRow=6;
+  const memRowByMonth={};
+  evo.rows.forEach((r,j)=>{memRowByMonth[r.mes]={lastRow:memFirstDataRow+j};});
+  let memRowsXml=[];
+  evo.rows.forEach((r,j)=>{
+    const row=memFirstDataRow+j;
+    const styTxt=zebra(j,'txt'),styNum=zebra(j,'num'),styPct=zebra(j,'pct'),styInt=zebra(j,'int'),styDate=zebra(j,'date');
+    const legMes=calcularLeg(r.saldoInicial,r.dataInicio,r.dataFim); // referência: "e se não tivesse amortização"
+    const saldoAntesAmort=r.saldoFinal+r.amort; // valor real, batendo com o saldo final correto
+    const cells=[
+      xlText(ml(r.mes),styTxt),
+      j===0?xlNum(P0,styNum):xlFormula(`=${R1C1(row-1,15)}`,r.saldoInicial,styNum),
+      xlDate(r.dataInicio,styDate),
+      xlDate(r.dataFim,styDate),
+      xlFormula(`=${R1C1(row,4)}-${R1C1(row,3)}`,legMes.n,styInt),
+      xlNum(legMes.ipcaRef,styPct),
+      xlText(legMes.sourceMonth?ml(legMes.sourceMonth):'—',styTxt),
+      xlText(legMes.sourceMonth&&legMes.sourceMonth!==mesAnterior(r.mes)?'Sim — nem o mês anterior estava publicado':'Não',styTxt),
+      xlNum(legMes.nu,styInt),
+      xlFormula(`=(1+${R1C1(row,6)})^(${R1C1(row,5)}/${R1C1(row,9)})`,legMes.fatorIpca,styNum),
+      xlFormula(`=${R1C1(row,2)}*${R1C1(row,10)}`,legMes.vna,styNum),
+      xlFormula(`=(1+${R1C1(memPremissasRow,2)})^(${R1C1(row,5)}/${R1C1(memPremissasRow,4)})`,legMes.fatorJuros,styNum),
+      xlFormula(`=${R1C1(row,15)}+${R1C1(row,14)}`,saldoAntesAmort,styNum),
+      xlNum(r.amort,styNum),
+      xlNum(r.saldoFinal,styNum),
+      xlFormula(`=${R1C1(row,13)}-${R1C1(row,2)}`,r.juros,styNum),
+      xlFormula(`=IF(${R1C1(row,5)}=0;0;(${R1C1(row,10)}*${R1C1(row,12)})^(1/${R1C1(row,5)})-1)`,r.n>0?Math.pow(legMes.fatorIpca*legMes.fatorJuros,1/legMes.n)-1:0,styPct),
+    ];
+    memRowsXml.push(xlRow(cells));
+  });
+  const memSheet=`<Worksheet ss:Name="Memória de Cálculo"><Table ss:DefaultColumnWidth="70">
+    ${Array.from({length:memColCount},(_,i)=>`<Column ss:Width="${[80,90,80,80,45,70,105,190,50,75,90,80,100,80,90,90,110][i]}"/>`).join('')}
+    ${xlMergedTitle('MEMÓRIA DE CÁLCULO — JUROS E CORREÇÃO MONETÁRIA (Cláusulas 5.1/5.3/5.4/Anexo I)',memColCount,'sTitle')}
+    <Row><Cell ss:MergeAcross="${memColCount-1}" ss:StyleID="sSubtitle"><Data ss:Type="String">VNa = Saldo inicial × (1+IPCA)^(n/nu)  ·  Fator Juros do mês inteiro (referência, "sem nenhuma amortização")  ·  Saldo antes da amortização e Saldo final vêm do cálculo real por Data de Pagamento (Anexo I, item 2): quando há recebimento no meio do mês, a amortização já reduz a base de juros a partir daquele dia — por isso pode não bater com VNa × Fator Juros nesses meses. IPCA: defasagem de um mês, com fallback em cascata se o mês anterior não estiver publicado.</Data></Cell></Row>
+    <Row>
+      ${xlText('Taxa de juros contratual (a.a.)','sPremValLbl')}
+      <Cell ss:StyleID="sPremVal"><Data ss:Type="Number">0.125</Data></Cell>
+      ${xlText('Base de cálculo (dias/ano)','sPremValLbl')}
+      <Cell ss:StyleID="sPremValInt"><Data ss:Type="Number">365</Data></Cell>
+      ${Array.from({length:memColCount-4},()=>'<Cell/>').join('')}
+    </Row>
+    <Row></Row>
+    ${xlRow(['Período','Saldo inicial','Data início','Data fim','Dias (n)','IPCA usado','Mês de referência do IPCA','Fallback?','nu','Fator IPCA','VNa (saldo atualizado)','Fator Juros','Saldo antes da amortização','Amortizado no mês','Saldo final','Juros do período','Taxa diária equiv. do período'].map(h=>xlText(h,'sHeader')),34)}
+    ${memRowsXml.join('')}
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes/><FrozenNoSplit/><SplitHorizontal>${memHeaderRow}</SplitHorizontal><TopRowBottomPane>${memHeaderRow}</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions>
+  </Worksheet>`;
+  const memLastRow=memFirstDataRow+evo.rows.length-1;
+
+  // ── Aba "Por competência" — resumo mensal, tudo por fórmula referenciando a
+  // "Memória de Cálculo" diretamente (relação 1 linha ↔ 1 linha).
+  const compFirstDataRow=5;
+  let compRowsXml=[];
+  evo.rows.forEach((r,j)=>{
+    const row=compFirstDataRow+j;
+    const memRow=memFirstDataRow+j;
+    const styTxt=zebra(j,'txt'),styNum=zebra(j,'num');
+    compRowsXml.push(xlRow([
+      xlText(ml(r.mes),styTxt),
+      xlFormula(`='Memória de Cálculo'!${R1C1(memRow,2)}`,r.saldoInicial,styNum),
+      xlFormula(`='Memória de Cálculo'!${R1C1(memRow,16)}`,r.juros,styNum),
+      xlFormula(`='Memória de Cálculo'!${R1C1(memRow,14)}`,r.amort,styNum),
+      xlFormula(`='Memória de Cálculo'!${R1C1(memRow,15)}`,r.saldoFinal,styNum),
+    ]));
+  });
+  const compLastRow=compFirstDataRow+evo.rows.length-1;
+  const compTotalRow=compLastRow+1;
+  compRowsXml.push(xlRow([
+    xlText('Total acumulado','sTotalTxt'),
+    xlText('','sTotalTxt'),
+    xlFormula(`=SUM(${R1C1(compFirstDataRow,3)}:${R1C1(compLastRow,3)})`,evo.totalJuros,'sTotal'),
+    xlFormula(`=SUM(${R1C1(compFirstDataRow,4)}:${R1C1(compLastRow,4)})`,evo.totalAmort,'sTotal'),
+    xlFormula(`=${R1C1(compLastRow,5)}`,evo.saldoFinal,'sTotal'),
+  ]));
+  const compSheet=`<Worksheet ss:Name="Por competência"><Table ss:DefaultColumnWidth="70">
+    <Column ss:Width="90"/><Column ss:Width="100"/><Column ss:Width="100"/><Column ss:Width="110"/><Column ss:Width="100"/>
+    ${xlMergedTitle('EVOLUÇÃO DO SALDO DEVEDOR POR COMPETÊNCIA',5,'sTitle')}
+    <Row><Cell ss:MergeAcross="4" ss:StyleID="sSubtitle"><Data ss:Type="String">Todas as células desta aba são fórmulas que referenciam a aba "Memória de Cálculo" — a fonte de cálculo é única.</Data></Cell></Row>
+    <Row></Row>
+    ${xlRow(['Período','Saldo inicial','Juros do período','Amortizado no mês','Saldo final'].map(h=>xlText(h,'sHeader')),28)}
+    ${compRowsXml.join('')}
+  </Table></Worksheet>`;
+
+  // ── Aba "Resumo" (referencia a aba Por competência) ──
+  const resumoSheet=`<Worksheet ss:Name="Resumo"><Table ss:DefaultColumnWidth="70">
+    <Column ss:Width="230"/><Column ss:Width="150"/>
+    ${xlMergedTitle('RELATÓRIO DE ACOMPANHAMENTO — VISTAMAR COQUEIRO',2,'sTitle')}
+    <Row><Cell ss:MergeAcross="1" ss:StyleID="sSubtitle"><Data ss:Type="String">Mútuo Imobiliário: RDamásio Imóveis Ltda. × LT Empreendimentos</Data></Cell></Row>
+    <Row></Row>
+    ${xlRow([xlText('Principal','sLabel'),xlNum(P0,'sCurrency')])}
+    ${xlRow([xlText('Vencimento','sLabel'),xlText('15/06/2029')])}
+    ${xlRow([xlText('Data de emissão do arquivo','sLabel'),xlText(hoje.toLocaleDateString('pt-BR'))])}
+    ${xlRow([xlText('Período considerado','sLabel'),xlText(`15/06/2026 até ${dataCorte.toLocaleDateString('pt-BR')}`)])}
+    ${xlRow([xlText('Data de Pagamento (Anexo I, item 2)','sLabel'),xlText(D.dataPagamento2DiasUteis?'2º dia útil após o recebimento':'Data do próprio recebimento')])}
+    ${D.ipcaAtualizadoEm?xlRow([xlText('Índices de IPCA atualizados em','sLabel'),xlText(new Date(D.ipcaAtualizadoEm).toLocaleString('pt-BR'))]):''}
+    <Row></Row>
+    ${xlRow([xlText('Saldo devedor estimado (hoje)','sLabel'),xlFormula(`='Por competência'!${R1C1(compTotalRow,5)}`,evo.saldoFinal,'sCurrency')])}
+    ${xlRow([xlText('Total amortizado','sLabel'),xlFormula(`='Por competência'!${R1C1(compTotalRow,4)}`,evo.totalAmort,'sCurrency')])}
+    ${xlRow([xlText('Total juros/correção acumulados','sLabel'),xlFormula(`='Por competência'!${R1C1(compTotalRow,3)}`,evo.totalJuros,'sCurrency')])}
+  </Table></Worksheet>`;
+
+  // ── Aba "Datas de Pagamento" (apoio) — só na versão detalhada. Ficha por
+  // evento/fechamento (Anexo I, item 2), usada como referência pelas fórmulas da
+  // aba "Dia a dia" pra saber, pra cada dia, qual foi o último fechamento (e o
+  // saldo naquele momento) — sem isso, um dia depois de uma amortização não
+  // saberia que a base de juros mudou.
+  let apoioSheet='',apoioFirstDataRow=6,apoioLastRow=6;
+  {
+    const apoioColCount=13;
+    const linhasApoio=[{tipo:'liberacao',data:EMISSAO}].concat(evo.eventos);
+    let apoioRowsXml=[];
+    linhasApoio.forEach((l,j)=>{
+      const row=apoioFirstDataRow+j;
+      const styTxt=zebra(j,'txt'),styNum=zebra(j,'num'),styPct=zebra(j,'pct'),styInt=zebra(j,'int'),styDate=zebra(j,'date');
+      const isLib=l.tipo==='liberacao';
+      const desc=isLib?'Data de Liberação (início da apuração)':l.tipo==='virada'?'Fechamento mensal (sem recebimento)':(l.desc||'Recebimento Cash Sweep');
+      const cells=isLib?[
+        xlDate(EMISSAO,styDate),xlText(desc,styTxt),xlNum(P0,styNum),xlNum(0,styInt),xlText('—',styTxt),
+        xlText('—',styTxt),xlNum(0,styInt),xlNum(1,styNum),xlNum(P0,styNum),xlNum(1,styNum),xlNum(P0,styNum),xlNum(0,styNum),xlNum(P0,styNum),
+      ]:[
+        xlDate(l.data,styDate),
+        xlText(desc,styTxt),
+        xlFormula(`=${R1C1(row-1,13)}`,l.saldoInicial,styNum),
+        xlFormula(`=${R1C1(row,1)}-${R1C1(row-1,1)}`,l.n,styInt),
+        xlNum(l.ipcaRef,styPct),
+        xlText(l.sourceMonth?ml(l.sourceMonth):'—',styTxt),
+        xlNum(l.nu,styInt),
+        xlFormula(`=(1+${R1C1(row,5)})^(${R1C1(row,4)}/${R1C1(row,7)})`,l.fatorIpca,styNum),
+        xlFormula(`=${R1C1(row,3)}*${R1C1(row,8)}`,l.vna,styNum),
+        xlFormula(`=(1+'Memória de Cálculo'!${R1C1(memPremissasRow,2)})^(${R1C1(row,4)}/'Memória de Cálculo'!${R1C1(memPremissasRow,4)})`,l.fatorJuros,styNum),
+        xlFormula(`=${R1C1(row,9)}*${R1C1(row,10)}`,l.saldoAntesAmort,styNum),
+        xlNum(l.amort||0,styNum),
+        xlFormula(`=MAX(0;${R1C1(row,11)}-${R1C1(row,12)})`,l.saldoFinal,styNum),
+      ];
+      apoioRowsXml.push(xlRow(cells));
+    });
+    apoioLastRow=apoioFirstDataRow+linhasApoio.length-1;
+    apoioSheet=`<Worksheet ss:Name="Datas de Pagamento"><Table ss:DefaultColumnWidth="70">
+    ${Array.from({length:apoioColCount},(_,i)=>`<Column ss:Width="${[80,175,90,45,70,105,50,80,90,80,95,80,95][i]}"/>`).join('')}
+    ${xlMergedTitle('DATAS DE PAGAMENTO (Anexo I, item 2) — APOIO PARA A ABA "DIA A DIA"',apoioColCount,'sTitle')}
+    <Row><Cell ss:MergeAcross="${apoioColCount-1}" ss:StyleID="sSubtitle"><Data ss:Type="String">Cada recebimento de Cash Sweep${D.dataPagamento2DiasUteis?' (+2 dias úteis)':''}, e cada fechamento mensal sem recebimento, gera uma linha aqui. A aba "Dia a dia" usa a data e o "Saldo final" da linha mais recente ≤ cada dia como base dos juros daquele dia — é assim que a redução do saldo passa a valer imediatamente após um recebimento, e não só no fim do mês.</Data></Cell></Row>
+    <Row>
+      ${xlText('Taxa de juros contratual (a.a.)','sPremValLbl')}
+      <Cell ss:StyleID="sPremVal"><Data ss:Type="Number">0.125</Data></Cell>
+      ${xlText('Base de cálculo (dias/ano)','sPremValLbl')}
+      <Cell ss:StyleID="sPremValInt"><Data ss:Type="Number">365</Data></Cell>
+      ${Array.from({length:apoioColCount-4},()=>'<Cell/>').join('')}
+    </Row>
+    <Row></Row>
+    ${xlRow(['Data','Descrição','Saldo inicial','Dias (n)','IPCA usado','Mês de referência do IPCA','nu','Fator IPCA','VNa','Fator Juros','Saldo antes da amortização','Amortizado','Saldo final'].map(h=>xlText(h,'sHeader')),30)}
+    ${apoioRowsXml.join('')}
+  </Table></Worksheet>`;
+  }
+
+  // ── Aba "Dia a dia" — fórmula exata por dia, consultando "Datas de Pagamento"
+  // pra saber o último fechamento antes de cada dia (não a taxa média do mês).
+  // Saldo final (dia) = Saldo naquele fechamento × Fator IPCA(dia) × Fator Juros(dia)
+  // — sem subtrair amortização de novo aqui, porque o "Saldo naquele fechamento"
+  // já vem líquido (a amortização já foi aplicada nele, na aba de apoio).
+  let diaSheet;
+  {
+    let diaRowsXml=[];
+    dias.forEach((r,j)=>{
+      const row=4+j; // cabeçalho na linha 3, dados a partir da 4
+      const styNum=zebra(j,'num'),styDate=zebra(j,'date'),styInt=zebra(j,'int'),styPct=zebra(j,'pct');
+      const memRowDoDia=memRowByMonth[r.mes].lastRow; // qualquer linha do mês serve — IPCA/nu são iguais o mês todo
+      const apoioRange=`'Datas de Pagamento'!${R1C1(apoioFirstDataRow,1)}:${R1C1(apoioLastRow,1)}`;
+      const apoioSaldoRange=`'Datas de Pagamento'!${R1C1(apoioFirstDataRow,13)}:${R1C1(apoioLastRow,13)}`;
+      const nDia=Math.max(0,Math.floor((r.data-r.dataFechamentoAnterior)/86400000));
+      diaRowsXml.push(xlRow([
+        xlDate(r.data,styDate),
+        j===0?xlNum(P0,styNum):xlFormula(`=${R1C1(row-1,10)}`,r.saldoInicial,styNum),
+        xlFormulaDate(`=SUMPRODUCT(MAX((${apoioRange}<=${R1C1(row,1)})*${apoioRange}))`,r.dataFechamentoAnterior,styDate),
+        xlFormula(`=INDEX(${apoioSaldoRange};MATCH(${R1C1(row,3)};${apoioRange};0))`,r.saldoNoFechamento,styNum),
+        xlFormula(`=${R1C1(row,1)}-${R1C1(row,3)}`,nDia,styInt),
+        xlFormula(`='Memória de Cálculo'!${R1C1(memRowDoDia,6)}`,r.ipcaRef,styPct),
+        xlFormula(`='Memória de Cálculo'!${R1C1(memRowDoDia,9)}`,r.nu,styInt),
+        xlFormula(`=(1+${R1C1(row,6)})^(${R1C1(row,5)}/${R1C1(row,7)})`,Math.pow(1+r.ipcaRef,nDia/r.nu),styNum),
+        xlFormula(`=(1+'Memória de Cálculo'!${R1C1(memPremissasRow,2)})^(${R1C1(row,5)}/'Memória de Cálculo'!${R1C1(memPremissasRow,4)})`,Math.pow(1.125,nDia/365),styNum),
+        xlFormula(`=MAX(0;${R1C1(row,4)}*${R1C1(row,8)}*${R1C1(row,9)})`,r.saldoFinal,styNum),
+        xlNum(r.amort,styNum),
+        xlFormula(`=${R1C1(row,10)}-${R1C1(row,2)}+${R1C1(row,11)}`,r.juros,styNum),
+        j===0?xlNum(r.jurosAcumuladoMes,styNum):xlFormula(`=IF(TEXT(${R1C1(row,1)},"yyyymm")<>TEXT(${R1C1(row-1,1)},"yyyymm");${R1C1(row,12)};${R1C1(row-1,13)}+${R1C1(row,12)})`,r.jurosAcumuladoMes,styNum),
+        j===0?xlNum(r.jurosAcumulado,styNum):xlFormula(`=${R1C1(row-1,14)}+${R1C1(row,12)}`,r.jurosAcumulado,styNum),
+      ]));
+    });
+    const diaColCount=14;
+    diaSheet=`<Worksheet ss:Name="Dia a dia"><Table ss:DefaultColumnWidth="70">
+    ${Array.from({length:diaColCount},(_,i)=>`<Column ss:Width="${[80,90,110,110,45,70,50,90,90,100,90,90,110,100][i]}"/>`).join('')}
+    ${xlMergedTitle('EVOLUÇÃO DO SALDO DEVEDOR — DIA A DIA',diaColCount,'sTitle')}
+    <Row><Cell ss:MergeAcross="${diaColCount-1}" ss:StyleID="sSubtitle"><Data ss:Type="String">Cada dia busca, na aba "Datas de Pagamento", o fechamento mais recente ≤ ele mesmo (já líquido de qualquer amortização) e conta os dias (n) a partir dali — não do início do mês. Por isso, no dia seguinte a um recebimento, os juros já incidem sobre o saldo reduzido (Anexo I, itens 2 e 4). IPCA e nu vêm da aba "Memória de Cálculo" (o mesmo o mês inteiro). Veja também a aba "Dia a dia (simplificado)", com os mesmos números prontos, sem fórmula.</Data></Cell></Row>
+    ${xlRow(['Data','Saldo inicial (dia)','Data do fechamento anterior','Saldo naquele fechamento','Dias (n)','IPCA usado','nu','Fator IPCA (dia)','Fator Juros (dia)','Saldo final (dia)','Amortizado no dia','Juros do dia','Juros acumulado no mês','Juros acumulado (total)'].map(h=>xlText(h,'sHeader')),30)}
+    ${diaRowsXml.join('')}
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes/><FrozenNoSplit/><SplitHorizontal>3</SplitHorizontal><TopRowBottomPane>3</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions>
+  </Worksheet>`;
+  }
+
+  // ── Aba "Dia a dia (simplificado)" — mesmas 7 colunas do PDF, valores prontos
+  // (sem fórmula), pra quem só quer olhar os números sem toda a mecânica.
+  let diaSimplesSheet;
+  {
+    let diaRowsXml=[];
+    dias.forEach((r,j)=>{
+      const styNum=zebra(j,'num'),styDate=zebra(j,'date');
+      diaRowsXml.push(xlRow([
+        xlDate(r.data,styDate),
+        xlNum(r.saldoInicial,styNum),
+        xlNum(r.juros,styNum),
+        xlNum(r.jurosAcumuladoMes,styNum),
+        xlNum(r.jurosAcumulado,styNum),
+        xlNum(r.amort,styNum),
+        xlNum(r.saldoFinal,styNum),
+      ]));
+    });
+    const diaColCount=7;
+    diaSimplesSheet=`<Worksheet ss:Name="Dia a dia (simplificado)"><Table ss:DefaultColumnWidth="70">
+    <Column ss:Width="80"/><Column ss:Width="100"/><Column ss:Width="90"/><Column ss:Width="115"/><Column ss:Width="105"/><Column ss:Width="100"/><Column ss:Width="100"/>
+    ${xlMergedTitle('EVOLUÇÃO DO SALDO DEVEDOR — DIA A DIA (SIMPLIFICADO)',diaColCount,'sTitle')}
+    <Row><Cell ss:MergeAcross="${diaColCount-1}" ss:StyleID="sSubtitle"><Data ss:Type="String">Valores exatos, calculados dia a dia desde a emissão (15/06/2026) — mesma metodologia da aba "Memória de Cálculo" (Anexo I, itens 2 e 4), só que sem fórmula. Veja a aba "Dia a dia" para a versão com fórmula completa e auditável.</Data></Cell></Row>
+    ${xlRow(['Data','Saldo inicial','Juros do dia','Juros acumulado no mês','Juros acumulado (total)','Amortizado no dia','Saldo final'].map(h=>xlText(h,'sHeader')),24)}
+    ${diaRowsXml.join('')}
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes/><FrozenNoSplit/><SplitHorizontal>3</SplitHorizontal><TopRowBottomPane>3</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions>
+  </Worksheet>`;
+  }
+
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office"><Title>Vistamar Coqueiro — Saldo Devedor</Title><Author>051 Capital</Author></DocumentProperties>
+ <Styles>${STYLES}</Styles>
+ ${resumoSheet}
+ ${compSheet}
+ ${memSheet}
+ ${apoioSheet}
+ ${diaSheet}
+ ${diaSimplesSheet}
+</Workbook>`;
+
+  const blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`Vistamar_Coqueiro_Saldo_Devedor_ate_${toISODate(dataCorte)}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function gerarRelatorioMensal(){
+  const today=new Date().toLocaleDateString('pt-BR');
+  const dataCorte=getRelatorioDataCorte();
+  // Tudo abaixo é filtrado pela data de corte selecionada, para bater exatamente
+  // com o que sai no Excel (evita divergência entre os dois relatórios)
+  const hoje=dataCorte;
+  const evo=computeEvolucao(hoje);
+  const saldo=evo.saldoFinal;
+  const sweep=evo.totalAmort;
+  const soldUnitsAteCorte=Object.entries(D.soldUnits).filter(([id,sd])=>new Date(sd.date+'T00:00:00')<=dataCorte);
+  const sold=soldUnitsAteCorte.length;
+  const idsVendidosAteCorte=new Set(soldUnitsAteCorte.map(([id])=>id));
+  const availValRel=UNITS.filter(u=>!idsVendidosAteCorte.has(String(u.id))).reduce((s,u)=>s+u.val,0);
+  const custos=D.sweepLog.filter(e=>e.tipo!=='sem_movimento'&&new Date(e.date+'T00:00:00')<=dataCorte).reduce((s,e)=>s+(e.custos||0),0);
+  const soParcelas=D.sweepLog.filter(e=>e.tipo==='parcela'&&new Date(e.date+'T00:00:00')<=dataCorte).reduce((s,e)=>s+(e.bruto||0),0);
+  const saldoRecebiv=Math.max(0,RECEBIVEIS_BASE-soParcelas);
+  const names=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const ml=m=>{const[y,mo]=m.split('-');return`${names[parseInt(mo)-1]}/${y}`;};
+
+  // Histórico de saldo devedor — mesma engine do Anexo I usada na aba Saldo Devedor
+  // (IPCA mensal efetivamente publicado pelo IBGE, Cláusulas 5.1/5.3/5.4/6.1(i))
+  const histRows=evo.rows.map(r=>({m:r.mes,si:r.saldoInicial,juros:r.juros,amort:r.amort,sf:r.saldoFinal}));
+  const totJ=evo.totalJuros,totA=evo.totalAmort,bal=evo.saldoFinal;
+  const mesAtual=monthKey(hoje);
+  const fimMesAtual=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
+  const rowProjecao=contarDC(hoje,fimMesAtual)>0?computeEvolucao(fimMesAtual).rows.find(r=>r.mes===mesAtual):null;
+  const diasRows=computeEvolucaoDiaria(hoje);
+
+  const w=window.open('','_blank');
+  if(!w){alert('Habilite popups para exportar.');return;}
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Acompanhamento Mensal — Vistamar Coqueiro</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Times New Roman',Times,serif;max-width:860px;margin:40px auto;color:#111;font-size:12.5px;line-height:1.6;background:#fff}
+.header{border-bottom:3px solid #111;padding-bottom:14px;margin-bottom:22px}
+.header h1{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.header .sub{font-size:11px;color:#555}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #ccc;margin-bottom:22px}
+.kpi{padding:11px 13px;border-right:1px solid #ccc}
+.kpi:last-child{border-right:none}
+.kpi .l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;margin-bottom:3px}
+.kpi .v{font-size:15px;font-weight:700;font-family:'Courier New',monospace;color:#111}
+h2{font-size:12px;font-weight:700;margin:22px 0 8px;padding-bottom:4px;border-bottom:1.5px solid #111;text-transform:uppercase;letter-spacing:.04em;color:#111}
+table{width:100%;border-collapse:collapse;margin-bottom:4px;font-size:11.5px}
+th{text-align:left;padding:6px 9px;background:#f0f0f0;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#444;border:0.5px solid #ccc}
+td{padding:6px 9px;border-bottom:0.5px solid #e0e0e0;color:#111}
+.nr{text-align:right;font-family:'Courier New',monospace}
+tr.alt td{background:#f8f8f8}
+tr.inadimp td{background:#f8f8f8;font-style:italic}
+.tot td{font-weight:700;background:#f0f0f0;border-top:1.5px solid #ccc}
+.nota{font-size:9.5px;color:#777;margin-bottom:18px;font-style:italic}
+.params{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.par{padding:7px 12px;background:#f8f8f8;border:0.5px solid #ccc;font-size:11.5px}
+.par strong{font-size:13.5px;display:block;font-family:'Courier New',monospace;color:#111}
+.par span{font-size:9.5px;color:#777;text-transform:uppercase;letter-spacing:.04em}
+footer{margin-top:32px;font-size:9.5px;color:#888;border-top:1px solid #ccc;padding-top:8px;text-align:center}
+@media print{body{margin:16px}@page{margin:1.8cm}}
+</style></head><body>
+
+<div class="header">
+  <h1>Relatório de Acompanhamento Mensal</h1>
+  <p class="sub">Condomínio Vistamar Coqueiro &nbsp;·&nbsp; LT Empreendimentos Imobiliários SPE Ltda. &nbsp;·&nbsp; Data de emissão: ${today}</p>
+  <p class="sub">Mútuo Imobiliário: RDamásio Imóveis Ltda. × LT Empreendimentos &nbsp;·&nbsp; Principal: R$ 12.000.000 &nbsp;·&nbsp; Vencimento: 15/06/2029</p>
+  <p class="sub">Período do relatório: 15/06/2026 até ${hoje.toLocaleDateString('pt-BR')}${D.ipcaAtualizadoEm?` &nbsp;·&nbsp; Índices de IPCA atualizados em: ${new Date(D.ipcaAtualizadoEm).toLocaleString('pt-BR')}`:''}</p>
+  <p class="sub">Data de Pagamento (Anexo I, item 2): ${D.dataPagamento2DiasUteis?'2º dia útil após o recebimento':'data do próprio recebimento'}</p>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="l">Saldo devedor estimado</div><div class="v">${fmt(saldo)}</div></div>
+  <div class="kpi"><div class="l">Total amortizado</div><div class="v">${fmt(sweep)}</div></div>
+  <div class="kpi"><div class="l">Recebíveis antigos restantes</div><div class="v">${fmt(saldoRecebiv)}</div></div>
+  <div class="kpi"><div class="l">Estoque disponível</div><div class="v">${fmt(availValRel)}</div><div style="font-size:9.5px;color:#888;margin-top:2px">${25-sold} unidades</div></div>
+</div>
+
+<h2>1. Evolução do saldo devedor por competência</h2>
+<table>
+<thead><tr><th>Período</th><th class="nr">Saldo inicial</th><th class="nr">Juros do período (est.)</th><th class="nr">Amortizado no mês</th><th class="nr">Saldo final</th><th>Situação</th></tr></thead>
+<tbody>
+${histRows.map((r,i)=>{
+  const hasMov=r.amort>0;
+  const hasSemMov=D.sweepLog.some(e=>e.tipo==='sem_movimento'&&e.date.startsWith(r.m+'-'));
+  const sit=hasSemMov?'Sem movimento':hasMov?'Recebido':'Em aberto';
+  return`<tr class="${i%2===1?'alt':''}"><td style="font-weight:600">${ml(r.m)}</td><td class="nr">${fmt(r.si)}</td><td class="nr">${fmt(r.juros)}</td><td class="nr" style="font-weight:${hasMov?'700':'400'}">${hasMov?fmt(r.amort):'—'}</td><td class="nr" style="font-weight:${hasMov?'700':'400'}">${fmt(r.sf)}</td><td style="font-size:10px;color:#555">${sit}</td></tr>`;
+}).join('')}
+</tbody>
+<tfoot><tr class="tot"><td>Total acumulado</td><td></td><td class="nr">${fmt(totJ)}</td><td class="nr">${fmt(totA)}</td><td class="nr">${fmt(bal)}</td><td></td></tr></tfoot>
+</table>
+<p class="nota">Juros e correção calculados por competência: saldo atualizado pelo IPCA do mês ANTERIOR à competência — defasagem fixa de um mês, nunca o índice do próprio mês (Cláusula 5.3/Anexo I), seguido de 12,5% a.a. sobre o saldo já atualizado (Cláusula 5.1, base 365 dias corridos). Amortização do Cash Sweep deduzida por último, nos termos da Cláusula 6.1(i).</p>
+
+${rowProjecao?`<h2 style="color:#777;border-bottom-color:#ccc">Projeção — fim do mês corrente (hipotética, fora do histórico real)</h2>
+<table>
+<thead><tr><th>Período</th><th class="nr">Saldo inicial</th><th class="nr">Juros do período</th><th class="nr">Amortizado</th><th class="nr">Saldo final projetado</th></tr></thead>
+<tbody>
+<tr style="color:#777"><td>${ml(rowProjecao.mes)}</td><td class="nr">${fmt(rowProjecao.saldoInicial)}</td><td class="nr">${fmt(rowProjecao.juros)}</td><td class="nr">${rowProjecao.amort>0?fmt(rowProjecao.amort):'—'}</td><td class="nr">${fmt(rowProjecao.saldoFinal)}</td></tr>
+</tbody>
+</table>
+<p class="nota">Não faz parte do histórico real nem soma no total acumulado acima. Simula o saldo devedor se o mês corrente fechasse hoje, mantendo o mesmo IPCA usado até agora e a mesma amortização já recebida — só estende a contagem de dias até o último dia do mês.</p>`:''}
+
+<h2>2. Evolução do saldo devedor dia a dia</h2>
+<table>
+<thead><tr><th>Data</th><th class="nr">Saldo inicial</th><th class="nr">Juros do dia</th><th class="nr">Juros acumulado no mês</th><th class="nr">Juros acumulado (total)</th><th class="nr">Amortizado no dia</th><th class="nr">Saldo final</th></tr></thead>
+<tbody>
+${diasRows.map((r,i)=>`<tr class="${i%2===1?'alt':''}"><td>${r.data.toLocaleDateString('pt-BR')}</td><td class="nr">${fmt(r.saldoInicial)}</td><td class="nr">${fmt(r.juros)}</td><td class="nr">${fmt(r.jurosAcumuladoMes)}</td><td class="nr" style="font-weight:600">${fmt(r.jurosAcumulado)}</td><td class="nr" style="font-weight:${r.amort>0?'700':'400'}">${r.amort>0?fmt(r.amort):'—'}</td><td class="nr">${fmt(r.saldoFinal)}</td></tr>`).join('')}
+</tbody>
+</table>
+<p class="nota">Mesma metodologia da tabela por competência (item 1), decomposta dia a dia desde a emissão (15/06/2026) até a data deste relatório. Juros acumulado no mês reseta a cada nova competência; Juros acumulado (total) é a soma desde a emissão.</p>
+
+<h2>3. Fluxo de pagamentos — Conta Centralizadora</h2>
+<table>
+<thead><tr><th>Data</th><th>Descrição</th><th class="nr">Bruto recebido</th><th class="nr">Custos deduzidos</th><th class="nr">Amortizado 051</th></tr></thead>
+<tbody>
+${(()=>{const rows=D.sweepLog.filter(e=>e.tipo!=='sem_movimento'&&new Date(e.date+'T00:00:00')<=dataCorte);return rows.length
+  ?rows.map((e,i)=>`<tr class="${i%2===1?'alt':''}"><td>${e.date}</td><td>${e.desc}</td><td class="nr">${fmt(e.bruto)}</td><td class="nr">${e.custos?fmt(e.custos):'—'}</td><td class="nr" style="font-weight:700">${fmt(e.amort)}</td></tr>`).join('')
+  :'<tr><td colspan="5" style="color:#888;text-align:center;padding:12px;font-style:italic">Nenhuma entrada registrada no período</td></tr>';})()}
+</tbody>
+<tfoot><tr class="tot"><td colspan="2">Total</td><td class="nr">${fmt(D.sweepLog.filter(e=>e.tipo!=='sem_movimento'&&new Date(e.date+'T00:00:00')<=dataCorte).reduce((s,e)=>s+e.bruto,0))}</td><td class="nr">${fmt(D.sweepLog.filter(e=>e.tipo!=='sem_movimento'&&new Date(e.date+'T00:00:00')<=dataCorte).reduce((s,e)=>s+(e.custos||0),0))}</td><td class="nr">${fmt(D.sweepLog.filter(e=>e.tipo!=='sem_movimento'&&new Date(e.date+'T00:00:00')<=dataCorte).reduce((s,e)=>s+(e.amort||0),0))}</td></tr></tfoot>
+</table>
+
+<h2>4. Controle do estoque — unidades vendidas no período</h2>
+<table>
+<thead><tr><th>Unidade</th><th>Matrícula</th><th>Data da venda</th><th class="nr">Bruto</th><th class="nr">Custos</th><th class="nr">Amortizado 051</th></tr></thead>
+<tbody>
+${(()=>{const entries=Object.entries(D.soldUnits).filter(([id,sd])=>new Date(sd.date+'T00:00:00')<=dataCorte);return entries.length
+  ?entries.map(([id,sd],i)=>{const u=UNITS.find(x=>x.id==id);return`<tr class="${i%2===1?'alt':''}"><td>${u?u.local:'Unidade '+id}</td><td style="font-family:'Courier New',monospace;font-size:10.5px">${u?u.mat:'—'}</td><td>${sd.date}</td><td class="nr">${fmt(sd.bruto)}</td><td class="nr">${fmt(sd.custos)}</td><td class="nr" style="font-weight:700">${fmt(sd.liq)}</td></tr>`}).join('')
+  :'<tr><td colspan="6" style="color:#888;text-align:center;padding:12px;font-style:italic">Nenhuma venda de estoque registrada no período</td></tr>';})()}
+</tbody>
+</table>
+
+<h2>5. Recebíveis de contratos anteriores (Quadro B — posição mai/2026)</h2>
+<table>
+<thead><tr><th>Unidade</th><th>Matrícula</th><th>Data venda</th><th>Comprador</th><th class="nr">Vencido</th><th class="nr">A vencer</th><th class="nr">Total</th></tr></thead>
+<tbody>
+${SOLD_UNITS_QB.map((u,i)=>{
+  const comp=D.compradores&&D.compradores[u.mat]?D.compradores[u.mat]:'(omitido — LGPD)';
+  const hasInad=u.vencido>0;
+  return`<tr class="${i%2===1?'alt':''}${hasInad?' inadimp':''}"><td>${u.unidade}</td><td style="font-family:'Courier New',monospace;font-size:10.5px">${u.mat}</td><td>${u.dataVenda}</td><td style="font-size:10.5px;color:#555">${comp}</td><td class="nr" style="font-weight:${hasInad?700:400}">${u.vencido>0?fmt(u.vencido):'—'}</td><td class="nr">${u.aVencer>0?fmt(u.aVencer):'—'}</td><td class="nr" style="font-weight:700">${fmt(u.total)}</td></tr>`;
+}).join('')}
+</tbody>
+<tfoot><tr class="tot"><td colspan="4">Total (22 unidades)</td><td class="nr">${fmt(SOLD_UNITS_QB.reduce((s,u)=>s+u.vencido,0))}</td><td class="nr">${fmt(SOLD_UNITS_QB.reduce((s,u)=>s+u.aVencer,0))}</td><td class="nr">${fmt(SOLD_UNITS_QB.reduce((s,u)=>s+u.total,0))}</td></tr></tfoot>
+</table>
+<p class="nota">Posição de recebíveis em maio/2026 conforme Quadro B do Contrato de Cessão Fiduciária de Recebíveis. Nomes dos adquirentes omitidos em observância à Lei n° 13.709/2018 (LGPD). Valores sujeitos a atualização periódica conforme Cláusula 3.4 do contrato.</p>
+
+<h2>6. Parâmetros de custo</h2>
+<div class="params">
+  <div class="par"><strong>${D.params.corret}%</strong><span>Corretagem</span></div>
+  <div class="par"><strong>${D.params.itbi}%</strong><span>ITBI</span></div>
+  <div class="par"><strong>${D.params.ir}%</strong><span>IR estimado</span></div>
+  <div class="par"><strong>${D.params.cobr>0?D.params.cobr+'%':'a definir'}</strong><span>Custo cobrança</span></div>
+  <div class="par"><strong>${D.params.freq}</strong><span>Check escrow</span></div>
+</div>
+
+<h2>7. Inventário de unidades</h2>
+<table>
+<thead><tr><th>Unidade</th><th>Tipo</th><th>Matrícula</th><th class="nr">Valor tabela</th><th>Status</th><th>Data venda</th><th class="nr">Bruto</th></tr></thead>
+<tbody>
+${UNITS.map((u,i)=>{
+  const sd=idsVendidosAteCorte.has(String(u.id))?D.soldUnits[u.id]:null;
+  return`<tr class="${i%2===1?'alt':''}"><td>${u.local}</td><td>${u.tipo}</td><td style="font-family:'Courier New',monospace;font-size:10.5px">${u.mat}</td><td class="nr">${fmt(u.val)}</td><td style="font-size:10px;color:${sd?'#0A6B3D':'#555'}">${sd?'Vendida':'Disponível'}</td><td>${sd?sd.date:'—'}</td><td class="nr">${sd?fmt(sd.bruto):'—'}</td></tr>`;
+}).join('')}
+</tbody>
+<tfoot><tr class="tot"><td colspan="3">Total (25 unidades)</td><td class="nr">${fmt(UNITS.reduce((s,u)=>s+u.val,0))}</td><td colspan="2">${25-sold} disponíveis · ${sold} vendidas</td><td class="nr">${fmt(soldUnitsAteCorte.reduce((s,[id,v])=>s+v.bruto,0))}</td></tr></tfoot>
+</table>
+
+<footer>Mútuo Imobiliário — RDamásio Imóveis Ltda. (CNPJ 05.891.719/0001-83) × LT Empreendimentos Imobiliários SPE Ltda. (CNPJ 34.828.524/0001-97) — Principal R$ 12.000.000 — Taxa IPCA + 12,5% a.a. — Vencimento 15/06/2029 — Documento de uso interno e confidencial</footer>
+</body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),600);
+}
+
+// ══════════════════════════════════════════════════════════
+// PENDÊNCIAS
+// ══════════════════════════════════════════════════════════
+function renderPendencias(){
+  if(!D.notificacoes)D.notificacoes={};
+  if(!D.contratos)D.contratos={};
+
+  // Card 1: garantias pendentes (lê do mesmo D.guarantees)
+  const garantItems=[
+    {k:'g1b',txt:'Cancelamento AF CRI Vistamar 47ª (R-6 Mat. 5.507 + Av-2 filhas)'},
+    {k:'g1c',txt:'Registro AF RDamásio em 1° grau — Matrícula 5.507 (cartório)'},
+    {k:'g1d',txt:'Averbação nas matrículas filhas (todas as unidades do empreendimento)'},
+    {k:'g1e',txt:'Certidão confirmando 1° grau para RDamásio, sem outros ônus'},
+    {k:'g2b',txt:'Cancelamento CF CRI Vistamar 47ª'},
+    {k:'g2c',txt:'Conta Centralizadora aberta (≤ 5 DU da assinatura)'},
+    {k:'g2d',txt:'Compradores antigos notificados — nova conta (≤ 10 DU)'},
+    {k:'g2e',txt:'Contratos de compra e venda aditados (referência Canal → nova conta)'},
+    {k:'g3b',txt:'Cancelamento AF de Quotas do CRI na JUCEPI'},
+    {k:'g3c',txt:'Registro AF de Quotas RDamásio na JUCEPI'},
+    {k:'g3d',txt:'Certidão JUCEPI confirmando registro'},
+    {k:'g4b',txt:'Cancelamento AF Quotas CRI — JUCEPI (≤ 30 DU)'},
+    {k:'g4c',txt:'ITU/IPTU regularizados — unidades estoque (≤ 90 dias)'},
+  ];
+  const garantList=document.getElementById('pd-garant-list');
+  if(garantList){
+    const pendentes=garantItems.filter(i=>!D.guarantees[i.k]);
+    const concluidos=garantItems.filter(i=>D.guarantees[i.k]);
+    garantList.innerHTML=[
+      ...pendentes.map(i=>`<li style="padding:8px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px;display:flex;gap:8px;align-items:flex-start"><span style="color:#E24B4A;flex-shrink:0;margin-top:1px">✗</span><span style="color:#111">${i.txt}</span></li>`),
+      ...concluidos.map(i=>`<li style="padding:8px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px;display:flex;gap:8px;align-items:flex-start;opacity:.5"><span style="color:#1D9E75;flex-shrink:0;margin-top:1px">✓</span><span style="text-decoration:line-through;color:#666">${i.txt}</span></li>`),
+    ].join('');
+    document.getElementById('pd-reg').textContent=pendentes.length+' itens';
+  }
+
+  // Card 2: notificações dos compradores do Quadro B
+  const tbody2=document.getElementById('pd-notif-tbody');
+  const tfoot2=document.getElementById('pd-notif-tfoot');
+  if(tbody2){
+    let totalNotif=0, totalVenc=0;
+    tbody2.innerHTML=SOLD_UNITS_QB.map((u,i)=>{
+      const notif=!!D.notificacoes[u.mat+'_notif'];
+      const comprov=!!D.notificacoes[u.mat+'_comprov'];
+      if(notif)totalNotif++;
+      totalVenc+=u.vencido;
+      const hasVenc=u.vencido>0;
+      return`<tr style="background:${hasVenc?'#FAEEDA33':i%2===1?'#f8f8f8':''}">
+        <td style="font-size:12px">${u.unidade}</td>
+        <td style="font-family:monospace;font-size:11px">${u.mat}</td>
+        <td class="nr" style="font-size:12px;font-weight:${hasVenc?600:400};color:${hasVenc?'#A32D2D':'#666'}">${u.vencido>0?fmt(u.vencido):'—'}</td>
+        <td style="text-align:center">
+          <input type="checkbox" ${notif?'checked':''} onchange="savePendCheck('${u.mat}_notif',this.checked)" style="accent-color:#1D9E75;width:15px;height:15px;cursor:pointer" title="Notificação enviada">
+        </td>
+        <td style="text-align:center">
+          <input type="checkbox" ${comprov?'checked':''} onchange="savePendCheck('${u.mat}_comprov',this.checked)" style="accent-color:#1D9E75;width:15px;height:15px;cursor:pointer" title="Comprovante de recebimento obtido">
+        </td>
+      </tr>`;
+    }).join('');
+    const faltam=22-totalNotif;
+    document.getElementById('pd-notif').textContent=faltam+' / 22';
+    if(tfoot2)tfoot2.innerHTML=`<tr style="font-weight:600;background:#f0f0f0"><td colspan="2">Total</td><td class="nr" style="color:#A32D2D">${fmt(totalVenc)}</td><td colspan="2" style="font-size:11px;color:#666;text-align:center">${totalNotif} notificados · ${22-totalNotif} pendentes</td></tr>`;
+  }
+
+  // Card 3: contratos disponíveis
+  const tbody3=document.getElementById('pd-contratos-tbody');
+  if(tbody3){
+    tbody3.innerHTML=SOLD_UNITS_QB.map((u,i)=>{
+      const dispon=!!D.contratos[u.mat];
+      const isMissing=u.mat==='8492'; // B9-201A — sabemos que está ausente
+      const hasVenc=u.vencido>0;
+      return`<tr style="background:${!dispon&&hasVenc?'#FCEBEB33':!dispon&&isMissing?'#FAEEDA33':i%2===1?'#f8f8f8':''}">
+        <td style="font-size:12px">${u.unidade}</td>
+        <td style="font-family:monospace;font-size:11px">${u.mat}</td>
+        <td style="font-size:12px">${u.dataVenda}</td>
+        <td class="nr" style="font-size:12px;color:${hasVenc?'#A32D2D':'#666'}">${u.vencido>0?fmt(u.vencido):'—'}</td>
+        <td style="text-align:center">
+          <input type="checkbox" ${dispon?'checked':''}${isMissing&&!dispon?' disabled':''} onchange="savePendCheck('contrato_${u.mat}',this.checked)" style="accent-color:#1D9E75;width:15px;height:15px;cursor:pointer" title="${isMissing?'Contrato não disponibilizado — verificar com LT':'Marcar quando obtido'}">
+        </td>
+        <td style="font-size:11px;color:#888">${isMissing?'⚠ Contrato-base não disponibilizado (Aditivo n°01 de 27/01/2026)':dispon?'Obtido':'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function savePendCheck(key,val){
+  if(!D.notificacoes)D.notificacoes={};
+  if(key.startsWith('contrato_')){
+    if(!D.contratos)D.contratos={};
+    D.contratos[key.replace('contrato_','')]=val;
+  } else {
+    D.notificacoes[key]=val;
+  }
+  saveLocal();
+  // Atualizar contadores sem re-renderizar tudo
+  const totalNotif=SOLD_UNITS_QB.filter(u=>D.notificacoes[u.mat+'_notif']).length;
+  const el=document.getElementById('pd-notif');
+  if(el)el.textContent=(22-totalNotif)+' / 22';
+}
+
+function popularOrigensRecebivel(){
+  ['e2-origem'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel||sel.options.length>1)return; // já populado
+    const oTeste=document.createElement('option');
+    oTeste.value='TESTE-SIC';
+    oTeste.text='SIC-Sistema e Gestão Ltda. (lançamento de teste)';
+    sel.appendChild(oTeste);
+    SOLD_UNITS_QB.forEach(u=>{
+      const o=document.createElement('option');
+      o.value=u.mat;
+      o.text=`${u.unidade} — mat. ${u.mat}`;
+      sel.appendChild(o);
+    });
+  });
+}
+popularOrigensRecebivel();
+const relDataFimEl=document.getElementById('rel-data-fim');
+if(relDataFimEl&&!relDataFimEl.value)relDataFimEl.value=toISODate(new Date());
+loadLocal();
+setTimeout(fetchIPCA,800);
+</script>
+</body>
+</html>
